@@ -3,7 +3,7 @@ test assigment
 
 Test project TaskAPI
 
-Create HTTP Rest API: 
+Create HTTP Rest API:
 
 1.	Use “echo” or “gin” frameworks for web handler.
 2.	Implement simple middleware for contains header 'Authorization: Bearer testkey123' in each request. Otherwise return 403 and json struct with error
@@ -18,7 +18,7 @@ Create HTTP Rest API:
 11.	Add support for OPTION HTTP method for each endpoints
 12.	Configure daemon over simple JSON config. Specify path as process flag for daemon. Required params: ListenAddress, DatabaseUri.
 
-Task: 
+Task:
 
 ```javascript
 type Task struct {
@@ -26,10 +26,10 @@ type Task struct {
     Title       string
     Description string
     Priority    int
-    CreatedAt   *time.Time 
-    UpdatedAt   *time.Time 
-    CompletedAt bool
-    IsDeleted   bool
+    CreatedAt   *time.Time
+    UpdatedAt   *time.Time
+    CompletedAt *time.Time
+    IsDeleted   bool
     IsCompleted bool
 }
 ```
