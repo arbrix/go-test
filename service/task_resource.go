@@ -65,7 +65,8 @@ func (tr *TaskResource) UpdateTask(c *gin.Context) {
 		c.JSON(400, api.NewError("problem decoding body"))
 		return
 	}
-	task.Id = int32(id)
+	task.ID = int64(id)
+	task.UpdatedAt = time.Now()
 
 	var existing api.Task
 
@@ -78,38 +79,6 @@ func (tr *TaskResource) UpdateTask(c *gin.Context) {
 
 }
 
-func (tr *TaskResource) PatchTask(c *gin.Context) {
-	id, err := tr.getId(c)
-	if err != nil {
-		c.JSON(400, api.NewError("problem decoding id sent"))
-		return
-	}
-
-	// this is a hack because Gin falsely claims my unmarshalled obj is invalid.
-	// recovering from the panic and using my object that already has the json body bound to it.
-	var json []api.Patch
-	defer func() {
-		if r := recover(); r != nil {
-			if json[0].Op != "replace" && json[0].Path != "/status" {
-				c.JSON(400, api.NewError("PATCH support is limited and can only replace the /status path"))
-				return
-			}
-
-			var task api.Task
-
-			if tr.db.First(&task, id).RecordNotFound() {
-				c.JSON(404, api.NewError("not found"))
-			} else {
-				task.Status = json[0].Value
-
-				tr.db.Save(&task)
-				c.JSON(200, task)
-			}
-		}
-	}()
-	c.Bind(&json)
-}
-
 func (tr *TaskResource) DeleteTask(c *gin.Context) {
 	id, err := tr.getId(c)
 	if err != nil {
@@ -118,21 +87,22 @@ func (tr *TaskResource) DeleteTask(c *gin.Context) {
 	}
 
 	var task api.Task
+	task.IsDeleted = true
 
 	if tr.db.First(&task, id).RecordNotFound() {
 		c.JSON(404, api.NewError("not found"))
 	} else {
-		tr.db.Delete(&task)
+		tr.db.Save(&task)
 		c.Data(204, "application/json", make([]byte, 0))
 	}
 }
 
-func (tr *TaskResource) getId(c *gin.Context) (int32, error) {
+func (tr *TaskResource) getId(c *gin.Context) (int64, error) {
 	idStr := c.Params.ByName("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		log.Print(err)
 		return 0, err
 	}
-	return int32(id), nil
+	return int64(id), nil
 }

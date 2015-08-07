@@ -1,8 +1,8 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
-	"io/ioutil"
 	"log"
 	"os"
 
@@ -11,19 +11,19 @@ import (
 )
 
 func getConfig(c *cli.Context) (service.Config, error) {
-	yamlPath := c.GlobalString("config")
+	jsonPath := c.GlobalString("config")
 	config := service.Config{}
 
-	if _, err := os.Stat(yamlPath); err != nil {
+	if _, err := os.Stat(jsonPath); err != nil {
 		return config, errors.New("config path not valid")
 	}
 
-	ymlData, err := ioutil.ReadFile(yamlPath)
+	file, err := os.Open(jsonPath)
 	if err != nil {
 		return config, err
 	}
-
-	err = yaml.Unmarshal([]byte(ymlData), &config)
+	decoder := json.NewDecoder(file)
+	err := decoder.Decode(&config)
 	return config, err
 }
 
@@ -35,7 +35,7 @@ func main() {
 	app.Version = "0.0.1"
 
 	app.Flags = []cli.Flag{
-		cli.StringFlag{"config, c", "config.yaml", "config file to use", "APP_CONFIG"},
+		cli.StringFlag{"config, c", "config.json", "config file to use", "APP_CONFIG"},
 	}
 
 	app.Commands = []cli.Command{

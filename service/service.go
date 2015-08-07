@@ -18,6 +18,7 @@ type TaskService struct {
 }
 
 func (s *TaskService) getDb(cfg Config) (gorm.DB, error) {
+
 	connectionString := cfg.DbUser + ":" + cfg.DbPassword + "@tcp(" + cfg.DbHost + ":3306)/" + cfg.DbName + "?charset=utf8&parseTime=True"
 
 	return gorm.Open("mysql", connectionString)
@@ -51,7 +52,6 @@ func (s *TaskService) Run(cfg Config) error {
 		r.GET("/task/:id", taskResource.GetTask)
 		r.POST("/task", taskResource.CreateTask)
 		r.PUT("/task/:id", taskResource.UpdateTask)
-		r.PATCH("/task/:id", taskResource.PatchTask)
 		r.DELETE("/task/:id", taskResource.DeleteTask)
 	}
 
