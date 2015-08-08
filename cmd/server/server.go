@@ -23,14 +23,14 @@ func getConfig(c *cli.Context) (service.Config, error) {
 		return config, err
 	}
 	decoder := json.NewDecoder(file)
-	err := decoder.Decode(&config)
+	err = decoder.Decode(&config)
 	return config, err
 }
 
 func main() {
 
 	app := cli.NewApp()
-	app.Name = "task"
+	app.Name = "task-api"
 	app.Usage = "work with the `task` microservice"
 	app.Version = "0.0.1"
 

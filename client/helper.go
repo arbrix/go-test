@@ -62,6 +62,7 @@ func processResponseEntity(r *http.Response, entity interface{}, expectedStatus 
 
 	return nil
 }
+
 func processResponse(r *http.Response, expectedStatus int) error {
 	if r.StatusCode != expectedStatus {
 		return errors.New("response status of " + r.Status)

@@ -17,7 +17,7 @@ type TaskResource struct {
 func (tr *TaskResource) CreateTask(c *gin.Context) {
 	var task api.Task
 
-	if !c.Bind(&task) {
+	if c.Bind(&task) != nil {
 		c.JSON(400, api.NewError("problem decoding body"))
 		return
 	}
@@ -61,12 +61,15 @@ func (tr *TaskResource) UpdateTask(c *gin.Context) {
 
 	var task api.Task
 
-	if !c.Bind(&task) {
+	if c.Bind(&task) != nil {
 		c.JSON(400, api.NewError("problem decoding body"))
 		return
 	}
 	task.ID = int64(id)
 	task.UpdatedAt = time.Now()
+	if task.IsCompleted == true {
+		task.CompletedAt = time.Now()
+	}
 
 	var existing api.Task
 

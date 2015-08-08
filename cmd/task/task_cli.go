@@ -24,16 +24,17 @@ func main() {
 	app.Commands = []cli.Command{
 		{
 			Name:  "add",
-			Usage: "(title description) create a task",
+			Usage: "(title description priority) create a task",
 			Action: func(c *cli.Context) {
 				title := c.Args().Get(0)
 				desc := c.Args().Get(1)
+				prior, _ := strconv.Atoi(c.Args().Get(2))
 
 				host := c.GlobalString("host")
 
 				client := client.TaskClient{Host: host}
 
-				task, err := client.CreateTask(title, desc)
+				task, err := client.CreateTask(title, desc, prior)
 				if err != nil {
 					log.Fatal(err)
 					return
@@ -58,52 +59,6 @@ func main() {
 				for _, task := range tasks {
 					fmt.Printf("%+v\n", task)
 				}
-			},
-		},
-		{
-			Name:  "doing",
-			Usage: "(id) update a task status to 'doing'",
-			Action: func(c *cli.Context) {
-				idStr := c.Args().Get(0)
-				id, err := strconv.Atoi(idStr)
-				if err != nil {
-					log.Print(err)
-					return
-				}
-
-				host := c.GlobalString("host")
-
-				client := client.TaskClient{Host: host}
-
-				task, err := client.UpdateTaskStatus(int64(id), "doing")
-				if err != nil {
-					log.Fatal(err)
-					return
-				}
-				fmt.Printf("%+v\n", task)
-			},
-		},
-		{
-			Name:  "done",
-			Usage: "(id) update a task status to 'done'",
-			Action: func(c *cli.Context) {
-				idStr := c.Args().Get(0)
-				id, err := strconv.Atoi(idStr)
-				if err != nil {
-					log.Print(err)
-					return
-				}
-
-				host := c.GlobalString("host")
-
-				client := client.TaskClient{Host: host}
-
-				task, err := client.UpdateTaskStatus(int64(id), "done")
-				if err != nil {
-					log.Fatal(err)
-					return
-				}
-				fmt.Printf("%+v\n", task)
 			},
 		},
 		{
