@@ -7,7 +7,9 @@ Create HTTP Rest API:
 
 * Use echo or gin for web handler
 * Implement login endpoint with JWT token, and simple middleware that checks header for 'Authorization: Bearer %jwt_token%' in each request. Otherwise return 403 and json struct with error
-* Implement endpoint that will use oAuth2 authorization for FB, to login and issue access_token
+* Implement endpoint that will use Facebook as OAuth2 provider 
+    * Implement authorize and create local user feature, using data from FB. Newly created user should be issued jwt token
+    * For already existing users implement login feature.
 * Log each request including status code
 * Implement persistence with MySQL and Gorm (https://github.com/jinzhu/gorm)
 * Use Goose or other tool of choice for DB migration (https://bitbucket.org/liamstask/goose)
