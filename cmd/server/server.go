@@ -24,6 +24,7 @@ func getConfig(c *cli.Context) (service.Config, error) {
 	}
 	decoder := json.NewDecoder(file)
 	err = decoder.Decode(&config)
+	log.Println(config.String())
 	return config, err
 }
 

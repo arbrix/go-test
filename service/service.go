@@ -1,6 +1,9 @@
 package service
 
 import (
+	_ "database/sql"
+	"fmt"
+
 	"github.com/arbrix/go-test/api"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
@@ -13,10 +16,15 @@ type Config struct {
 	DatabaseUri   string
 }
 
+func (cfg Config) String() string {
+	return cfg.ListenAddress + "; " + cfg.DatabaseUri
+}
+
 type TaskService struct {
 }
 
 func (s *TaskService) getDb(cfg Config) (gorm.DB, error) {
+	fmt.Println(cfg.DatabaseUri)
 	return gorm.Open("mysql", cfg.DatabaseUri)
 }
 
@@ -47,16 +55,13 @@ func (s *TaskService) Run(cfg Config) error {
 
 	r := gin.Default()
 	r.Use(cors.Middleware(cors.Options{}))
+	r.Use(CheckHeader())
 
-	auth := r.Group("/")
-	auth.Use(CheckHeader())
-	{
-		r.GET("/task", taskResource.GetAllTasks)
-		r.GET("/task/:id", taskResource.GetTask)
-		r.POST("/task", taskResource.CreateTask)
-		r.PUT("/task/:id", taskResource.UpdateTask)
-		r.DELETE("/task/:id", taskResource.DeleteTask)
-	}
+	r.GET("/task", taskResource.GetAllTasks)
+	r.GET("/task/:id", taskResource.GetTask)
+	r.POST("/task", taskResource.CreateTask)
+	r.PUT("/task/:id", taskResource.UpdateTask)
+	r.DELETE("/task/:id", taskResource.DeleteTask)
 	r.GET("/test", index)
 
 	r.Run(cfg.ListenAddress)

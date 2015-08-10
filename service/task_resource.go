@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"log"
 	"strconv"
 	"time"
@@ -16,12 +17,16 @@ type TaskResource struct {
 
 func (tr *TaskResource) CreateTask(c *gin.Context) {
 	var task api.Task
+	fmt.Println(c.PostForm("Title"), c.PostForm("Description"), c.PostForm("Priority"))
+	fmt.Println(c.Param("Title"), c.Param("Description"), c.Param("Priority"))
 
 	if c.Bind(&task) != nil {
+		fmt.Println(task.String())
 		c.JSON(400, api.NewError("problem decoding body"))
 		return
 	}
 	task.CreatedAt = time.Now()
+	fmt.Println(task.String())
 
 	tr.db.Save(&task)
 
@@ -31,7 +36,7 @@ func (tr *TaskResource) CreateTask(c *gin.Context) {
 func (tr *TaskResource) GetAllTasks(c *gin.Context) {
 	var tasks []api.Task
 
-	tr.db.Order("created desc").Find(&tasks)
+	tr.db.Order("CreatedAt desc").Find(&tasks)
 
 	c.JSON(200, tasks)
 }
@@ -62,6 +67,7 @@ func (tr *TaskResource) UpdateTask(c *gin.Context) {
 	var task api.Task
 
 	if c.Bind(&task) != nil {
+		fmt.Println(task.String())
 		c.JSON(400, api.NewError("problem decoding body"))
 		return
 	}
@@ -70,7 +76,7 @@ func (tr *TaskResource) UpdateTask(c *gin.Context) {
 	if task.IsCompleted == true {
 		task.CompletedAt = time.Now()
 	}
-
+	fmt.Println(task.String())
 	var existing api.Task
 
 	if tr.db.First(&existing, id).RecordNotFound() {
