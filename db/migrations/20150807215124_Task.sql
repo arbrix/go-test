@@ -6,9 +6,9 @@ CREATE TABLE task (
     title varchar(128),
     description varchar(1024),
     priority int DEFAULT 0,
-    CreatedAt timestamp,
-    UpdatedAt timestamp,
-    CompletedAt timestamp,
+    CreatedAt datetime,
+    UpdatedAt datetime,
+    CompletedAt datetime,
     isDeleted bool DEFAULT false,
     isCompeted bool DEFAULT false,
     PRIMARY KEY(id)

@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"flag"
 	"log"
 	"os"
 
@@ -28,7 +29,11 @@ func getConfig(path string) (service.Config, error) {
 }
 
 func main() {
-	confPath := os.Args[1]
+	var confPath string
+
+	flag.StringVar(&confPath, "conf_path", "conf.json", "path to config file")
+	flag.Parse()
+
 	cfg, err := getConfig(confPath)
 	if err != nil {
 		log.Fatal(err)

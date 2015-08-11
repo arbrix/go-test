@@ -55,26 +55,6 @@ func main() {
 				if err = svc.Run(cfg); err != nil {
 					log.Fatal(err)
 				}
-			},
-		},
-		{
-			Name:  "migratedb",
-			Usage: "Perform database migrations",
-			Action: func(c *cli.Context) {
-				cfg, err := getConfig(c)
-				if err != nil {
-					log.Fatal(err)
-					return
-				}
-
-				svc := service.TaskService{}
-
-				if err = svc.Migrate(cfg); err != nil {
-					log.Fatal(err)
-				}
-			},
-		},
+			}},
 	}
-	app.Run(os.Args)
-
 }
