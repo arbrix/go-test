@@ -1,10 +1,11 @@
-package service
+package web
 
 import (
 	_ "database/sql"
 	"fmt"
 
-	"github.com/arbrix/go-test/api"
+	"github.com/arbrix/go-test/controllers"
+	"github.com/arbrix/go-test/web/middleware"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
@@ -28,41 +29,25 @@ func (s *TaskService) getDb(cfg Config) (gorm.DB, error) {
 	return gorm.Open("mysql", cfg.DatabaseUri)
 }
 
-func (s *TaskService) Migrate(cfg Config) error {
-	db, err := s.getDb(cfg)
-	if err != nil {
-		return err
-	}
-	db.SingularTable(true)
-
-	db.AutoMigrate(&api.Task{})
-	return nil
-}
-
-func index(c *gin.Context) {
-	content := gin.H{"Hello": "World"}
-	c.JSON(200, content)
-}
-
 func (s *TaskService) Run(cfg Config) error {
 	db, err := s.getDb(cfg)
 	if err != nil {
 		return err
 	}
 	db.SingularTable(true)
+	db.LogMode(true)
 
-	taskResource := &TaskResource{db: db}
+	taskController := &controllers.TaskController{db: db}
 
 	r := gin.Default()
 	r.Use(cors.Middleware(cors.Options{}))
-	r.Use(CheckHeader())
+	r.Use(middleware.CheckHeader())
 
-	r.GET("/task", taskResource.GetAllTasks)
-	r.GET("/task/:id", taskResource.GetTask)
-	r.POST("/task", taskResource.CreateTask)
-	r.PUT("/task/:id", taskResource.UpdateTask)
-	r.DELETE("/task/:id", taskResource.DeleteTask)
-	r.GET("/test", index)
+	r.GET("/task", taskController.GetAllTasks)
+	r.GET("/task/:id", taskController.GetTask)
+	r.POST("/task", taskController.CreateTask)
+	r.PUT("/task/:id", taskController.UpdateTask)
+	r.DELETE("/task/:id", taskController.DeleteTask)
 
 	r.Run(cfg.ListenAddress)
 

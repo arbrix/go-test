@@ -1,4 +1,4 @@
-package service
+package tests
 
 import (
 	"io"
@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/arbrix/go-test/web/middleware"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
@@ -46,7 +47,7 @@ func request(server *gin.Engine, options requestOptions) *httptest.ResponseRecor
 
 func newServer() *gin.Engine {
 	g := gin.New()
-	g.Use(CheckHeader())
+	g.Use(middleware.CheckHeader())
 
 	return g
 }

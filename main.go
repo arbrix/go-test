@@ -7,12 +7,12 @@ import (
 	"log"
 	"os"
 
-	"github.com/arbrix/go-test/service"
+	"github.com/arbrix/go-test/web"
 )
 
-func getConfig(path string) (service.Config, error) {
+func getConfig(path string) (web.Config, error) {
 	jsonPath := path
-	config := service.Config{}
+	config := web.Config{}
 
 	if _, err := os.Stat(jsonPath); err != nil {
 		return config, errors.New("config path not valid")
@@ -31,7 +31,7 @@ func getConfig(path string) (service.Config, error) {
 func main() {
 	var confPath string
 
-	flag.StringVar(&confPath, "conf_path", "conf.json", "path to config file")
+	flag.StringVar(&confPath, "config", "conf.json", "path to config file")
 	flag.Parse()
 
 	cfg, err := getConfig(confPath)
@@ -40,7 +40,7 @@ func main() {
 		return
 	}
 
-	svc := service.TaskService{}
+	svc := web.TaskService{}
 
 	if err = svc.Run(cfg); err != nil {
 		log.Fatal(err)

@@ -1,4 +1,4 @@
-package client
+package utils
 
 import (
 	"bytes"
@@ -31,6 +31,7 @@ func buildRequest(method string, url string, entity interface{}) (*http.Request,
 		return req, err
 	}
 	req.Header.Set("content-type", "application/json")
+	req.Header.Set("Authorization", "Bearer testkey123")
 	return req, err
 }
 

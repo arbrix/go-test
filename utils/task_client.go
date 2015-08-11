@@ -1,10 +1,10 @@
-package client
+package utils
 
 import (
 	"log"
 	"strconv"
 
-	"github.com/arbrix/go-test/api"
+	"github.com/arbrix/go-test/models"
 )
 
 var _ = log.Print
@@ -13,9 +13,9 @@ type TaskClient struct {
 	Host string
 }
 
-func (tc *TaskClient) CreateTask(title, description string, priority int) (api.Task, error) {
-	var respTask api.Task
-	task := api.Task{Title: title, Description: description, Priority: priority}
+func (tc *TaskClient) CreateTask(title, description string, priority int) (models.Task, error) {
+	var respTask models.Task
+	task := models.Task{Title: title, Description: description, Priority: priority}
 
 	url := tc.Host + "/task"
 	r, err := makeRequest("POST", url, task)
@@ -26,8 +26,8 @@ func (tc *TaskClient) CreateTask(title, description string, priority int) (api.T
 	return respTask, err
 }
 
-func (tc *TaskClient) GetAllTasks() ([]api.Task, error) {
-	var respTasks []api.Task
+func (tc *TaskClient) GetAllTasks() ([]models.Task, error) {
+	var respTasks []models.Task
 
 	url := tc.Host + "/task"
 	r, err := makeRequest("GET", url, nil)
@@ -38,8 +38,8 @@ func (tc *TaskClient) GetAllTasks() ([]api.Task, error) {
 	return respTasks, err
 }
 
-func (tc *TaskClient) GetTask(id int64) (api.Task, error) {
-	var respTask api.Task
+func (tc *TaskClient) GetTask(id int64) (models.Task, error) {
+	var respTask models.Task
 
 	url := tc.Host + "/task/" + strconv.FormatInt(int64(id), 10)
 	r, err := makeRequest("GET", url, nil)
@@ -50,8 +50,8 @@ func (tc *TaskClient) GetTask(id int64) (api.Task, error) {
 	return respTask, err
 }
 
-func (tc *TaskClient) UpdateTask(task api.Task) (api.Task, error) {
-	var respTask api.Task
+func (tc *TaskClient) UpdateTask(task models.Task) (models.Task, error) {
+	var respTask models.Task
 
 	url := tc.Host + "/task/" + strconv.FormatInt(int64(task.ID), 10)
 	r, err := makeRequest("PUT", url, task)
