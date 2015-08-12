@@ -65,6 +65,17 @@ func (tc *TaskClient) UpdateTask(task models.Task) (models.Task, error) {
 func (tc *TaskClient) DeleteTask(id int64) error {
 	url := tc.Host + "/task/" + strconv.FormatInt(int64(id), 10)
 	r, err := makeRequest("DELETE", url, nil)
+
+	if err != nil {
+		return err
+	}
+	return processResponse(r, 204)
+}
+
+func (tc *TaskClient) RealDeleteTask(id int64) error {
+	url := tc.Host + "/task-del/" + strconv.FormatInt(int64(id), 10)
+	r, err := makeRequest("DELETE", url, nil)
+
 	if err != nil {
 		return err
 	}

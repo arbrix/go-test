@@ -12,13 +12,13 @@ import (
 )
 
 type TaskController struct {
-	db gorm.DB
+	Db gorm.DB
 }
 
 func (tc *TaskController) CreateTask(c *gin.Context) {
 	var task models.Task
 
-	if c.Bind(&task) == nil {
+	if c.Bind(&task) != nil {
 		fmt.Println(task.String())
 		c.JSON(400, models.NewError("problem decoding body"))
 		return
@@ -26,7 +26,7 @@ func (tc *TaskController) CreateTask(c *gin.Context) {
 	task.CreatedAt = time.Now()
 	fmt.Println(task.String())
 
-	tc.db.Save(&task)
+	tc.Db.Save(&task)
 
 	c.JSON(201, task)
 }
@@ -34,7 +34,7 @@ func (tc *TaskController) CreateTask(c *gin.Context) {
 func (tc *TaskController) GetAllTasks(c *gin.Context) {
 	var tasks []models.Task
 
-	tc.db.Order("CreatedAt desc").Find(&tasks)
+	tc.Db.Where("isDeleted = ?", 0).Order("created desc").Find(&tasks)
 
 	c.JSON(200, tasks)
 }
@@ -48,7 +48,7 @@ func (tc *TaskController) GetTask(c *gin.Context) {
 
 	var task models.Task
 
-	if tc.db.First(&task, id).RecordNotFound() {
+	if tc.Db.Where("isDeleted = ?", 0).First(&task, id).RecordNotFound() {
 		c.JSON(404, gin.H{"error": "not found"})
 	} else {
 		c.JSON(200, task)
@@ -63,8 +63,9 @@ func (tc *TaskController) UpdateTask(c *gin.Context) {
 	}
 
 	var task models.Task
+	tc.Db.First(&task, id)
 
-	if c.Bind(&task) == nil {
+	if c.Bind(&task) != nil {
 		fmt.Println(task.String())
 		c.JSON(400, models.NewError("problem decoding body"))
 		return
@@ -76,11 +77,12 @@ func (tc *TaskController) UpdateTask(c *gin.Context) {
 	}
 	fmt.Println(task.String())
 	var existing models.Task
+	existing.IsDeleted = false
 
-	if tc.db.First(&existing, id).RecordNotFound() {
+	if tc.Db.First(&existing, id).RecordNotFound() {
 		c.JSON(404, models.NewError("not found"))
 	} else {
-		tc.db.Save(&task)
+		tc.Db.Save(&task)
 		c.JSON(200, task)
 	}
 
@@ -94,12 +96,30 @@ func (tc *TaskController) DeleteTask(c *gin.Context) {
 	}
 
 	var task models.Task
-	task.IsDeleted = true
 
-	if tc.db.First(&task, id).RecordNotFound() {
+	if tc.Db.Where("isDeleted = ?", 0).First(&task, id).RecordNotFound() {
 		c.JSON(404, models.NewError("not found"))
 	} else {
-		tc.db.Save(&task)
+		task.IsDeleted = true
+		task.UpdatedAt = time.Now()
+		tc.Db.Save(&task)
+		c.Data(204, "application/json", make([]byte, 0))
+	}
+}
+
+func (tc *TaskController) RealDeleteTask(c *gin.Context) {
+	id, err := tc.getId(c)
+	if err != nil {
+		c.JSON(400, models.NewError("problem decoding id sent"))
+		return
+	}
+
+	var task models.Task
+
+	if tc.Db.Where("isDeleted = ?", 0).First(&task, id).RecordNotFound() {
+		c.JSON(404, models.NewError("not found"))
+	} else {
+		tc.Db.Delete(&task)
 		c.Data(204, "application/json", make([]byte, 0))
 	}
 }

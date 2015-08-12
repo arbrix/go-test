@@ -37,7 +37,7 @@ func (s *TaskService) Run(cfg Config) error {
 	db.SingularTable(true)
 	db.LogMode(true)
 
-	taskController := &controllers.TaskController{db: db}
+	taskController := &controllers.TaskController{Db: db}
 
 	r := gin.Default()
 	r.Use(cors.Middleware(cors.Options{}))
@@ -48,6 +48,7 @@ func (s *TaskService) Run(cfg Config) error {
 	r.POST("/task", taskController.CreateTask)
 	r.PUT("/task/:id", taskController.UpdateTask)
 	r.DELETE("/task/:id", taskController.DeleteTask)
+	r.DELETE("/task-del/:id", taskController.RealDeleteTask)
 
 	r.Run(cfg.ListenAddress)
 
