@@ -40,3 +40,5 @@ frontend/canjs/static-build
 *.private
 .vendor
 gin-bin
+
+config/oauth.go
