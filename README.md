@@ -40,16 +40,18 @@ type Task struct {
 
 ### Architecture
 
-MVC architecture was chosen. View's layer is not necessary for this API so it wasn't implemented.
+copy from github.com/dorajistyle/goyangi
 
 Structure
 ```
-- controllers
-- db            //for goose migration component
-- models
+- api           //REST API, routes, resource
+- config        //general system configuration
+- db            //gorm init and for goose migration component
+- model         //description of DB entity
+- service       //business logic
 - tests
-- utils         //additional layer for tests
-- web           //router and middleware
+- util          //helpers and tools
+- web           //server and middleware
 - conf.json     //configuration file
 - main.go       //application
 - README.md
@@ -61,6 +63,9 @@ go get github.com/gin-gonic/gin
 go get github.com/coopernurse/gorp
 go get bitbucket.org/liamstask/goose/cmd/goose
 go get github.com/tommy351/gin-cors
+go get github.com/gorilla/securecookie
+go get golang.org/x/crypto/bcrypt
+go get golang.org/x/oauth2
 goose -path="src/github.com/arbrix/go-test/db" up #table: test; user: test; password: test; should exists or change dbconf.yml and conf.json
 ```
 
