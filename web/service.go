@@ -1,28 +1,21 @@
 package web
 
 import (
-	"fmt"
+	//	"fmt"
 
 	"github.com/arbrix/go-test/api"
+	"github.com/arbrix/go-test/config"
 	"github.com/arbrix/go-test/db"
-	"github.com/arbrix/go-test/web/middleware"
+	"github.com/arbrix/go-test/util/log"
+	//	"github.com/arbrix/go-test/web/middleware"
 	"github.com/gin-gonic/gin"
 	"github.com/tommy351/gin-cors"
 )
 
-type Config struct {
-	ListenAddress string
-	DatabaseUri   string
+type Service struct {
 }
 
-func (cfg Config) String() string {
-	return cfg.ListenAddress + "; " + cfg.DatabaseUri
-}
-
-type TaskService struct {
-}
-
-func (s *TaskService) Run(cfg Config) {
+func (s *Service) Run(cfg config.Config) {
 	db.ORM = db.GormInit(cfg)
 	r := gin.New()
 	r.Use(cors.Middleware(cors.Options{}))

@@ -89,5 +89,5 @@ func facebookRedirect(c *gin.Context) {
 	if err != nil {
 		log.CheckErrorWithMessage(err, fmt.Sprintf("httpStatusCode : %d", status))
 	}
-	c.Redirect(303, config.HostURL)
+	c.Redirect(303, config.Config.ListenAddress)
 }

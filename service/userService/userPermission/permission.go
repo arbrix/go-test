@@ -5,29 +5,10 @@ import (
 	"net/http"
 
 	"github.com/arbrix/go-test/api/response"
-	"github.com/arbrix/go-test/model"
 	"github.com/arbrix/go-test/service/userService"
 	"github.com/arbrix/go-test/util/log"
 	"github.com/gin-gonic/gin"
 )
-
-// HasAdmin checks that user has an admin permission.
-func HasAdmin(user *model.User) bool {
-	name := "admin"
-	for _, role := range user.Roles {
-		log.Debugf("HasAdmin role.Name : %s", role.Name)
-		if role.Name == name {
-			return true
-		}
-	}
-	return false
-}
-
-// CurrentOrAdmin check that user has admin permission or user is the current user.
-func CurrentOrAdmin(user *model.User, userId int64) bool {
-	log.Debugf("user.Id == userId %d %d %s", user.Id, userId, user.Id == userId)
-	return (HasAdmin(user) || user.Id == userId)
-}
 
 // CurrentUserIdentical check that userId is same as current user's Id.
 func CurrentUserIdentical(c *gin.Context, userId int64) (int, error) {
@@ -52,23 +33,6 @@ func AuthRequired(f func(c *gin.Context)) gin.HandlerFunc {
 			return
 		}
 		f(c)
-		return
-	}
-}
-
-// AdminRequired run function when user logged in and user has an admin role.
-func AdminRequired(f func(c *gin.Context)) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		user, err := userService.CurrentUser(c)
-		if err == nil {
-			if HasAdmin(&user) {
-				f(c)
-				log.Debug("User has admin role.")
-				return
-			}
-		}
-		log.Error("Admin role required.")
-		response.KnownErrorJSON(c, http.StatusUnauthorized, "error.adminRequired", errors.New("Admin role required."))
 		return
 	}
 }

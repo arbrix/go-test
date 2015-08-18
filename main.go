@@ -7,25 +7,26 @@ import (
 	"log"
 	"os"
 
+	"github.com/arbrix/go-test/config"
 	"github.com/arbrix/go-test/web"
 )
 
-func getConfig(path string) (web.Config, error) {
+func getConfig(path string) (config.Config, error) {
 	jsonPath := path
-	config := web.Config{}
+	conf := config.Config{}
 
 	if _, err := os.Stat(jsonPath); err != nil {
-		return config, errors.New("config path not valid")
+		return conf, errors.New("config path not valid")
 	}
 
 	file, err := os.Open(jsonPath)
 	if err != nil {
-		return config, err
+		return conf, err
 	}
 	decoder := json.NewDecoder(file)
-	err = decoder.Decode(&config)
-	log.Println(config.String())
-	return config, err
+	err = decoder.Decode(&conf)
+	log.Println(conf.String())
+	return conf, err
 }
 
 func main() {
@@ -40,9 +41,7 @@ func main() {
 		return
 	}
 
-	svc := web.TaskService{}
+	svc := web.Service{}
 
-	if err = svc.Run(cfg); err != nil {
-		log.Fatal(err)
-	}
+	svc.Run(cfg)
 }

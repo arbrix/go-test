@@ -17,7 +17,7 @@ func Tasks(parentRoute *gin.RouterGroup) {
 	route.GET("", userPermission.AuthRequired(retrieveTasks))
 	route.PUT("/:id", userPermission.AuthRequired(updateTask))
 	route.DELETE("/:id", userPermission.AuthRequired(deleteTask))
-	route.DELETE("/del/:id", userPermission.AuthRequired(realDeleteTask))
+	parentRoute.DELETE("/task-del/:id", userPermission.AuthRequired(realDeleteTask))
 }
 
 // @Title createTask
@@ -142,7 +142,7 @@ func deleteTask(c *gin.Context) {
 // @Resource /tasks
 // @Router /tasks/del/{id} [delete]
 func realDeleteTask(c *gin.Context) {
-	status, err := userService.DeleteUser(c)
+	status, err := taskService.DeleteTask(c)
 	if err == nil {
 		c.JSON(status, response.BasicResponse{})
 	} else {

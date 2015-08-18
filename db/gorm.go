@@ -6,14 +6,12 @@ import (
 	"github.com/arbrix/go-test/util/log"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
-
-	"github.com/arbrix/go-test/web"
 )
 
 var ORM gorm.DB
 
 // GormInit init gorm ORM.
-func GormInit(cfg web.Config) (gorm.DB, error) {
+func GormInit(cfg config.Config) gorm.DB {
 	db, err := gorm.Open("mysql", cfg.DatabaseUri)
 	db.DB()
 
@@ -30,5 +28,5 @@ func GormInit(cfg web.Config) (gorm.DB, error) {
 	}
 	log.CheckError(err)
 
-	return db, err
+	return db
 }
