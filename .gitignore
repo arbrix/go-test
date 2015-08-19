@@ -43,3 +43,5 @@ gin-bin
 
 !config
 config/oauth.go
+
+keys/app.rsa
