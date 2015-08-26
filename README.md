@@ -60,12 +60,17 @@ Structure
 ### Install
 ```
 go get github.com/gin-gonic/gin
-go get github.com/coopernurse/gorp
+go get github.com/gin-gonic/contrib
+go get github.com/jinzhu/gorm
+go get github.com/go-sql-driver/mysql
 go get bitbucket.org/liamstask/goose/cmd/goose
-go get github.com/tommy351/gin-cors
-go get github.com/gorilla/securecookie
 go get golang.org/x/crypto/bcrypt
+go get github.com/dgrijalva/jwt-go
 go get golang.org/x/oauth2
+go get github.com/Sirupsen/logrus
+go get gopkg.in/natefinch/lumberjack.v2
+go get github.com/smartystreets/goconvey/convey
+go get github.com/stretchr/testify/assert
 goose -path="src/github.com/arbrix/go-test/db" up #table: test; user: test; password: test; should exists or change dbconf.yml and conf.json
 ```
 
@@ -78,13 +83,17 @@ go-test
 
 ### Use & Test
 ```
-curl -i -H "Authorization: Bearer testkey123" -X GET http://127.0.0.1:8080/task
-curl -i -H "Content-Type: application/json" -H "Authorization: Bearer testkey123" -X POST -d '{"Title":"MyTask","Description":"Soon will be done","Priority":2}' http://127.0.0.1:8080/task
-curl -i -H "Content-Type: application/json" -H "Authorization: Bearer testkey123" -X PUT -d '{"Title":"MyTask","Description":"Soon will be done","Priority":3,"IsCompleted":true}' http://127.0.0.1:8080/task/1
-curl -i -H "Content-Type: application/json" -H "Authorization: Bearer testkey123" -X DELETE http://127.0.0.1:8080/task/1
 json request body:
--- create user:
-{"registrationUsername":"jonas","registrationEmail":"jonas","registrationPassword":"12345"}
--- login user:
-{"loginEmail":"jonas","loginPassword":"12345"}
+-- create user (POST /api/v1/users):
+{"name":"test1","email":"test1@test.net","pass":"12345"}
+-- login user (POST /api/v1/authorization):
+{"login":"jonas","pass":"12345"}
+-- create task (POST /api/v1/tasks):
+{"title":"test title","desc":"test description","priority":1}
+-- list tasks (GET /api/v1/tasks):
+{}
+-- update task (PUT /api/v1/tasks/:id):
+{"title":"test title","desc":"test description","priority":1,"completed":true}
+-- delete tasks (DELETE /api/v1/tasks/:id):
+{}
 ```
