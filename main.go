@@ -35,7 +35,8 @@ func main() {
 	flag.StringVar(&confPath, "config", "conf.json", "path to config file")
 	flag.Parse()
 
-	cfg, err := getConfig(confPath)
+	var err error
+	config.JsonConfig, err = getConfig(confPath)
 	if err != nil {
 		log.Fatal(err)
 		return
@@ -43,5 +44,5 @@ func main() {
 
 	svc := web.Service{}
 
-	svc.Run(cfg)
+	svc.Run(config.JsonConfig)
 }

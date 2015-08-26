@@ -12,6 +12,8 @@ type Config struct {
 	DatabaseUri   string
 }
 
+var JsonConfig = Config{"", ""}
+
 func (cfg Config) String() string {
 	return cfg.ListenAddress + "; " + cfg.DatabaseUri
 }

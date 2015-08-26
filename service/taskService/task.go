@@ -32,7 +32,10 @@ func CreateTask(c *gin.Context) (int, error) {
 	var createForm CreateTaskForm
 	var err error
 
-	c.BindWith(&createForm, binding.Form)
+	err = c.BindWith(&createForm, binding.JSON)
+	if err != nil {
+		return http.StatusInternalServerError, err
+	}
 	_, err = CreateTaskFromForm(createForm)
 	if err != nil {
 		return http.StatusInternalServerError, err
@@ -73,7 +76,10 @@ func UpdateTask(c *gin.Context) (*model.Task, int, error) {
 		return &task, http.StatusNotFound, errors.New("Task is not found.")
 	}
 	var form UpdateTaskForm
-	c.BindWith(&form, binding.Form)
+	err := c.BindWith(&form, binding.JSON)
+	if err != nil {
+		return &task, http.StatusInternalServerError, err
+	}
 	log.Debugf("form %+v\n", form)
 	modelHelper.AssignValue(&task, &form)
 	task.UpdatedAt = time.Now()
@@ -82,6 +88,18 @@ func UpdateTask(c *gin.Context) (*model.Task, int, error) {
 	}
 
 	log.Debugf("params %+v\n", c.Params)
+	status, err := UpdateTaskCore(&task)
+	return &task, status, err
+}
+
+func MarkAsDeleted(c *gin.Context) (*model.Task, int, error) {
+	id := c.Params.ByName("id")
+	var task model.Task
+	if db.ORM.First(&task, id).RecordNotFound() {
+		return &task, http.StatusNotFound, errors.New("Task is not found.")
+	}
+	task.UpdatedAt = time.Now()
+	task.IsDeleted = true
 	status, err := UpdateTaskCore(&task)
 	return &task, status, err
 }

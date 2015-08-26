@@ -2,21 +2,21 @@ package userService
 
 // RegistrationForm is used when creating a user.
 type RegistrationForm struct {
-	Username string `form:"registrationUsername" binding:"required"`
-	Email    string `form:"registrationEmail" binding:"required"`
-	Password string `form:"registrationPassword" binding:"required"`
+	Username string `json:"name" form:"registrationUsername" binding:"required"`
+	Email    string `json:"email" form:"registrationEmail" binding:"required"`
+	Password string `json:"pass" form:"registrationPassword" binding:"required"`
 }
 
 // LoginForm is used when creating a user authentication.
 type LoginForm struct {
-	Email    string `form:"loginEmail" binding:"required"`
-	Password string `form:"loginPassword" binding:"required"`
+	Email    string `json:"login" form:"loginEmail" binding:"required"`
+	Password string `json:"pass" form:"loginPassword" binding:"required"`
 }
 
 // UserForm is used when updating a user.
 type UserForm struct {
-	Age  int64  `form:"age"`
-	Name string `form:"name" binding:"required"`
+	Age  int64  `json:"age" form:"age"`
+	Name string `json:"name" form:"name" binding:"required"`
 }
 
 // PasswordForm is used when updating a user password.

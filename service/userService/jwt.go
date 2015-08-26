@@ -8,29 +8,44 @@ import (
 	"time"
 
 	"github.com/arbrix/go-test/config"
+	"github.com/arbrix/go-test/db"
 	"github.com/arbrix/go-test/model"
 	"github.com/arbrix/go-test/util/log"
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 )
 
-func CreateToken(user *model.User) (string, int, error) {
+var JwtToken string
+
+func CreateToken(userContact string) (int, error) {
 	// Create the token
 	token := jwt.New(jwt.GetSigningMethod("HS256"))
 	// Set some claims
 	token.Claims["AccessToken"] = "level1"
-	token.Claims["CustomUserInfo"] = struct {
-		Name string
-		Kind string
-	}{user.Name, "human"}
+	token.Claims["CustomUserInfo"] = userContact
 	token.Claims["exp"] = time.Now().Add(time.Minute * 30).Unix()
 	// Sign and get the complete encoded token as a string
-	tokenString, err := token.SignedString(config.SecretKey)
+	tokenString, err := token.SignedString([]byte(config.SecretKey))
 	if err != nil {
 		log.Fatalf("Token Signing error: %v\n", err)
-		return "", http.StatusInternalServerError, errors.New("Sorry, error while Signing Token!")
+		return http.StatusInternalServerError, errors.New("Sorry, error while Signing Token!")
 	}
-	return tokenString, http.StatusOK, nil
+	JwtToken = tokenString
+	return http.StatusOK, nil
+}
+
+func GetToken() (string, error) {
+	if JwtToken == "" {
+		return "", errors.New("JWT not created!")
+	}
+	return JwtToken, nil
+}
+
+func DecodeToken(encToken string) (*jwt.Token, error) {
+	token, err := jwt.Parse(encToken, func(token *jwt.Token) (interface{}, error) {
+		return []byte(config.SecretKey), nil
+	})
+	return token, err
 }
 
 func CheckToken(c *gin.Context) (bool, error) {
@@ -59,4 +74,25 @@ func fromAuthHeader(c *gin.Context) (string, error) {
 	}
 
 	return authHeaderParts[1], nil
+}
+
+// CurrentUser get a current user.
+func CurrentUser(c *gin.Context) (model.User, error) {
+	var user model.User
+	encToken, err := fromAuthHeader(c)
+	if err != nil {
+		return user, err
+	}
+	jwtToken, err := DecodeToken(encToken)
+	if err != nil {
+		return user, err
+	}
+	if jwtToken.Valid == false {
+		return user, errors.New("JWT not valid")
+	}
+
+	if db.ORM.Select(config.UserPublicFields+", email").Where("token = ?", jwtToken.Claims["CustomUserInfo"]).First(&user).RecordNotFound() {
+		return user, errors.New("User is not found by jwt")
+	}
+	return user, nil
 }

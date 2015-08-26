@@ -45,6 +45,5 @@ func ResetPassword(c *gin.Context) (int, error) {
 	if err != nil {
 		return status, err
 	}
-	status, err = SetCookie(c, user.Token)
 	return status, err
 }

@@ -44,8 +44,8 @@ func SuggestUsername(username string) string {
 	return usernameCandidate
 }
 
-// CreateUserFromForm creates a user from a registration form.
-func CreateUserFromForm(registrationForm RegistrationForm) (model.User, error) {
+// CreateUserFromJson creates a user from a registration form.
+func CreateUserFromJson(registrationForm RegistrationForm) (model.User, error) {
 	var user model.User
 	log.Debugf("registrationForm %+v\n", registrationForm)
 	modelHelper.AssignValue(&user, &registrationForm)
@@ -65,21 +65,26 @@ func CreateUserFromForm(registrationForm RegistrationForm) (model.User, error) {
 // CreateUser creates a user.
 func CreateUser(c *gin.Context) (int, error) {
 	var registrationForm RegistrationForm
+	var user model.User
 	var status int
 	var err error
 
-	c.BindWith(&registrationForm, binding.Form)
+	err = c.BindWith(&registrationForm, binding.JSON)
+	if err != nil {
+		return http.StatusInternalServerError, err
+	}
 
+	userPass := registrationForm.Password
 	password, err := bcrypt.GenerateFromPassword([]byte(registrationForm.Password), 10)
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}
 	registrationForm.Password = string(password)
-	_, err = CreateUserFromForm(registrationForm)
+	user, err = CreateUserFromJson(registrationForm)
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}
-	status, err = RegisterHandler(c)
+	status, err = Login(user.Email, userPass)
 	return status, err
 }
 
@@ -164,7 +169,6 @@ func UpdateUser(c *gin.Context) (*model.User, int, error) {
 	if err != nil {
 		return &user, status, err
 	}
-	status, err = SetCookie(c, user.Token)
 	return &user, status, err
 }
 
@@ -178,8 +182,7 @@ func DeleteUser(c *gin.Context) (int, error) {
 	if db.ORM.Delete(&user).Error != nil {
 		return http.StatusInternalServerError, errors.New("User is not deleted.")
 	}
-	status, err := ClearCookie(c)
-	return status, err
+	return http.StatusOK, nil
 }
 
 // RetrieveCurrentUser retrieves a current user.

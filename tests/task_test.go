@@ -3,13 +3,13 @@ package tests
 import (
 	"testing"
 
-	"github.com/arbrix/go-test/utils"
+	"github.com/arbrix/go-test/util/task"
 )
 
 func TestCreateTask(t *testing.T) {
 
 	// given
-	client := utils.TaskClient{Host: "http://localhost:8080"}
+	client := task.TaskClient{Host: "http://localhost:8080"}
 
 	// when
 	task, err := client.CreateTask("foo", "bar", 1)
@@ -30,7 +30,7 @@ func TestCreateTask(t *testing.T) {
 func TestGetTask(t *testing.T) {
 
 	// given
-	client := utils.TaskClient{Host: "http://localhost:8080"}
+	client := task.TaskClient{Host: "http://localhost:8080"}
 	task, _ := client.CreateTask("foo", "bar", 1)
 	id := task.ID
 
@@ -52,7 +52,7 @@ func TestGetTask(t *testing.T) {
 
 func TestGetAllTask(t *testing.T) {
 	// given
-	client := utils.TaskClient{Host: "http://localhost:8080"}
+	client := task.TaskClient{Host: "http://localhost:8080"}
 	task1, _ := client.CreateTask("task1", "Desk 1", 1)
 	task2, _ := client.CreateTask("task2", "Desk 2", 2)
 
@@ -75,7 +75,7 @@ func TestGetAllTask(t *testing.T) {
 
 func TestCompliteTask(t *testing.T) {
 	// given
-	client := utils.TaskClient{Host: "http://localhost:8080"}
+	client := task.TaskClient{Host: "http://localhost:8080"}
 	task, _ := client.CreateTask("foo4complite", "bar for complite", 3)
 	task.IsCompleted = true
 	// when
@@ -94,7 +94,7 @@ func TestCompliteTask(t *testing.T) {
 func TestDeleteTask(t *testing.T) {
 
 	// given
-	client := utils.TaskClient{Host: "http://localhost:8080"}
+	client := task.TaskClient{Host: "http://localhost:8080"}
 	task, _ := client.CreateTask("foo", "bar", 1)
 	id := task.ID
 

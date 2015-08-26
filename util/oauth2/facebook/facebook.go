@@ -1,6 +1,7 @@
 package facebook
 
 import (
+	"fmt"
 	"net/url"
 
 	"github.com/arbrix/go-test/config"
@@ -30,10 +31,11 @@ var Endpoint = oauth2.Endpoint{
 var Config = Oauth2Config()
 
 func Oauth2Config() *oauth2.Config {
+	fmt.Println("http://" + config.JsonConfig.ListenAddress + config.OauthFacebookRedirectURL)
 	return &oauth2.Config{
 		ClientID:     config.OauthFacebookClientID,
 		ClientSecret: config.OauthFacebookClientSecret,
-		RedirectURL:  config.OauthFacebookRedirectURL,
+		RedirectURL:  "http://" + config.JsonConfig.ListenAddress + config.OauthFacebookRedirectURL,
 		Scopes: []string{
 			"public_profile",
 			"email",

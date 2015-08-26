@@ -6,17 +6,17 @@ const (
 	// for DEVELOPMENT
 	MysqlHostDev     = "127.0.0.1"
 	MysqlPortDev     = "3306"
-	MysqlUserDev     = "root"
-	MysqlPasswordDev = ""
-	MysqlDatabaseDev = "goyangi_dev"
+	MysqlUserDev     = "test"
+	MysqlPasswordDev = "test"
+	MysqlDatabaseDev = "test"
 	MysqlOptionsDev  = "charset=utf8&parseTime=True"
 	MysqlDSLDev      = MysqlUserDev + ":" + MysqlPasswordDev + "@" + MysqlProtocol + "(" + MysqlHostDev + ":" + MysqlPortDev + ")/" + MysqlDatabaseDev + "?" + MysqlOptionsDev
 	// for TEST
 	MysqlHostTest     = "127.0.0.1"
 	MysqlPortTest     = "3306"
-	MysqlUserTest     = "root"
-	MysqlPasswordTest = ""
-	MysqlDatabaseTest = "goyangi_test"
+	MysqlUserTest     = "test"
+	MysqlPasswordTest = "test"
+	MysqlDatabaseTest = "test"
 	MysqlOptionsTest  = "charset=utf8&parseTime=True"
 	MysqlDSLTest      = MysqlUserTest + ":" + MysqlPasswordTest + "@" + MysqlProtocol + "(" + MysqlHostTest + ":" + MysqlPortTest + ")/" + MysqlDatabaseTest + "?" + MysqlOptionsTest
 	// for PRODUCTION

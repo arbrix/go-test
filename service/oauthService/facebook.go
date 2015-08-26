@@ -22,7 +22,7 @@ type FacebookUser struct {
 
 // FacebookURL return facebook auth url.
 func FacebookURL() (string, int) {
-	return oauth2.OauthURL(facebook.Config), http.StatusOK
+	return oauth2.OauthURL(facebook.Oauth2Config()), http.StatusOK
 }
 
 // SetFacebookUser set facebook user.
@@ -42,9 +42,12 @@ func SetFacebookUser(response *http.Response) (*FacebookUser, error) {
 func OauthFacebook(c *gin.Context) (int, error) {
 	var authResponse oauth2.AuthResponse
 	var oauthUser OauthUser
-	c.BindWith(&authResponse, binding.Form)
+	err := c.BindWith(&authResponse, binding.Form)
+	if err != nil {
+		return http.StatusInternalServerError, err
+	}
 	log.Debugf("oauthRedirect form: %v", authResponse)
-	response, token, err := oauth2.OauthRequest(facebook.RequestURL, facebook.Config, authResponse)
+	response, token, err := oauth2.OauthRequest(facebook.RequestURL, facebook.Oauth2Config(), authResponse)
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}

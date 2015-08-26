@@ -2,11 +2,11 @@ package v1
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/arbrix/go-test/api/response"
-	"github.com/arbrix/go-test/config"
 	"github.com/arbrix/go-test/service/oauthService"
-	"github.com/arbrix/go-test/service/userService/userPermission"
+	"github.com/arbrix/go-test/service/userService"
 	"github.com/arbrix/go-test/util/log"
 	"github.com/gin-gonic/gin"
 )
@@ -19,7 +19,6 @@ func Oauth(parentRoute *gin.RouterGroup) {
 	route.GET("", retrieveOauthStatus)
 
 	route.GET("/facebook", facebookAuth)
-	route.DELETE("/facebook", userPermission.AuthRequired(facebookRevoke))
 	route.GET("/facebook/redirect", facebookRedirect)
 }
 
@@ -89,5 +88,5 @@ func facebookRedirect(c *gin.Context) {
 	if err != nil {
 		log.CheckErrorWithMessage(err, fmt.Sprintf("httpStatusCode : %d", status))
 	}
-	c.Redirect(303, config.Config.ListenAddress)
+	c.JSON(http.StatusAccepted, gin.H{"token": userService.JwtToken})
 }

@@ -1,23 +1,25 @@
 package v1
 
 import (
+	"github.com/gin-gonic/contrib/jwt"
 	"github.com/gin-gonic/gin"
 
 	"github.com/arbrix/go-test/api/response"
+	"github.com/arbrix/go-test/config"
 	"github.com/arbrix/go-test/service/taskService"
-	"github.com/arbrix/go-test/service/userService/userPermission"
 )
 
 // @Title Tasks
 // @Description Tasks's router group.
 func Tasks(parentRoute *gin.RouterGroup) {
 	route := parentRoute.Group("/tasks")
-	route.POST("", userPermission.AuthRequired(createTask))
-	route.GET("/:id", userPermission.AuthRequired(retrieveTask))
-	route.GET("", userPermission.AuthRequired(retrieveTasks))
-	route.PUT("/:id", userPermission.AuthRequired(updateTask))
-	route.DELETE("/:id", userPermission.AuthRequired(deleteTask))
-	parentRoute.DELETE("/task-del/:id", userPermission.AuthRequired(realDeleteTask))
+	route.Use(jwt.Auth(config.SecretKey))
+	route.POST("", createTask)
+	route.GET("/:id", retrieveTask)
+	route.GET("", retrieveTasks)
+	route.PUT("/:id", updateTask)
+	route.DELETE("/:id", deleteTask)
+	parentRoute.DELETE("/task-del/:id", realDeleteTask)
 }
 
 // @Title createTask
@@ -117,8 +119,7 @@ func updateTask(c *gin.Context) {
 // @Resource /tasks
 // @Router /tasks/{id} [delete]
 func deleteTask(c *gin.Context) {
-	c.Set("teskDeleted", true)
-	_, status, err := taskService.UpdateTask(c)
+	_, status, err := taskService.MarkAsDeleted(c)
 	if err == nil {
 		c.JSON(status, response.BasicResponse{})
 	} else {

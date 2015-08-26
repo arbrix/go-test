@@ -76,10 +76,15 @@ cp src/github.com/arbrix/go-test/conf.json ./
 go-test
 ```
 
-### Use
+### Use & Test
 ```
 curl -i -H "Authorization: Bearer testkey123" -X GET http://127.0.0.1:8080/task
 curl -i -H "Content-Type: application/json" -H "Authorization: Bearer testkey123" -X POST -d '{"Title":"MyTask","Description":"Soon will be done","Priority":2}' http://127.0.0.1:8080/task
 curl -i -H "Content-Type: application/json" -H "Authorization: Bearer testkey123" -X PUT -d '{"Title":"MyTask","Description":"Soon will be done","Priority":3,"IsCompleted":true}' http://127.0.0.1:8080/task/1
 curl -i -H "Content-Type: application/json" -H "Authorization: Bearer testkey123" -X DELETE http://127.0.0.1:8080/task/1
+json request body:
+-- create user:
+{"registrationUsername":"jonas","registrationEmail":"jonas","registrationPassword":"12345"}
+-- login user:
+{"loginEmail":"jonas","loginPassword":"12345"}
 ```

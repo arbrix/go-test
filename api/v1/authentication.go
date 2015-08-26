@@ -12,7 +12,6 @@ import (
 func Authentications(parentRoute *gin.RouterGroup) {
 	route := parentRoute.Group("/authentications")
 	route.POST("", createUserAuthentication)
-	route.DELETE("", deleteUserAuthentication)
 }
 
 // @Title createUserAuthentication
@@ -20,6 +19,7 @@ func Authentications(parentRoute *gin.RouterGroup) {
 // @Accept  json
 // @Param   loginEmail        form   string     true        "User email."
 // @Param   loginPassword        form   string  true        "User password."
+// @Success 200 {object} token string
 // @Success 201 {object} response.BasicResponse "User authentication created"
 // @Failure 401 {object} response.BasicResponse "Password incorrect"
 // @Failure 404 {object} response.BasicResponse "User is not found"
@@ -31,18 +31,9 @@ func createUserAuthentication(c *gin.Context) {
 		Unauthorized: "login.error.passwordIncorrect",
 		NotFound:     "login.error.userNotFound"}
 	messages := &response.Messages{OK: "User logged in successfully."}
-	response.JSON(c, status, messageTypes, messages, err)
-}
-
-// @Title deleteUserAuthentication
-// @Description Delete a user session.
-// @Accept  json
-// @Success 200 {object}  response.BasicResponse "User logged out successfully"
-// @Resource /authentications
-// @Router /authentications [delete]
-func deleteUserAuthentication(c *gin.Context) {
-	status, err := userService.ClearCookie(c)
-	messageTypes := &response.MessageTypes{OK: "logout.done"}
-	messages := &response.Messages{OK: "User logged out successfully."}
-	response.JSON(c, status, messageTypes, messages, err)
+	if err != nil {
+		response.JSON(c, status, messageTypes, messages, err)
+		return
+	}
+	c.JSON(status, gin.H{"token": userService.JwtToken})
 }

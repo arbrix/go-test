@@ -61,8 +61,8 @@ func RetrieveOauthStatus(c *gin.Context) (oauthStatusMap, int, error) {
 }
 
 // LoginWithOauthUser login with oauthUser's username.
-func LoginWithOauthUser(c *gin.Context, token string) (int, error) {
-	status, err := userService.SetCookie(c, token)
+func LoginWithOauthUser(c *gin.Context, userContact string) (int, error) {
+	status, err := userService.CreateToken(userContact)
 	if err != nil {
 		return status, err
 	}
@@ -91,7 +91,7 @@ func CreateOauthUser(c *gin.Context, oauthUser *OauthUser, connection *model.Con
 	currentUser, err := userService.CurrentUser(c)
 	if err != nil {
 		log.Errorf("currentUser : %v", currentUser)
-		user, err = userService.CreateUserFromForm(registrationForm)
+		user, err = userService.CreateUserFromJson(registrationForm)
 		if err != nil {
 			return user, http.StatusInternalServerError, errors.New("User is not created.")
 		}
@@ -99,10 +99,6 @@ func CreateOauthUser(c *gin.Context, oauthUser *OauthUser, connection *model.Con
 		if db.ORM.Where("id = ?", currentUser.Id).First(&user).RecordNotFound() {
 			return user, http.StatusInternalServerError, errors.New("User is not found.")
 		}
-	}
-	db.ORM.Model(&user).Association("Connections").Append(connection)
-	if db.ORM.Save(&user).Error != nil {
-		return user, http.StatusInternalServerError, errors.New("Connection not appended to user.")
 	}
 	return user, http.StatusOK, nil
 }
@@ -119,8 +115,8 @@ func LoginOrCreateOauthUser(c *gin.Context, oauthUser *OauthUser, providerID int
 	connection.ProfileUrl = oauthUser.ProfileUrl
 	connection.ImageUrl = oauthUser.ImageUrl
 	log.Debugf("connection count : %v", count)
+	var user model.User
 	if count == 1 {
-		var user model.User
 		if db.ORM.First(&user, "id = ?", connection.UserId).RecordNotFound() {
 			return http.StatusNotFound, errors.New("User is not found.")
 		}
@@ -128,15 +124,15 @@ func LoginOrCreateOauthUser(c *gin.Context, oauthUser *OauthUser, providerID int
 		if db.ORM.Save(&connection).Error != nil {
 			return http.StatusInternalServerError, errors.New("Connection is not updated.")
 		}
-		status, err := LoginWithOauthUser(c, user.Token)
+		status, err := LoginWithOauthUser(c, user.Email)
 		return status, err
 	}
 	log.Debugf("Connection is not exist.")
-	user, status, err := CreateOauthUser(c, oauthUser, &connection)
+	_, status, err := CreateOauthUser(c, oauthUser, &connection)
 	if err != nil {
 		return status, err
 	}
-	status, err = LoginWithOauthUser(c, user.Token)
+	status, err = LoginWithOauthUser(c, user.Email)
 	return status, err
 }
 

@@ -1,6 +1,7 @@
 package db
 
 import (
+	"fmt"
 	"github.com/arbrix/go-test/config"
 	"github.com/arbrix/go-test/model"
 	"github.com/arbrix/go-test/util/log"
@@ -12,6 +13,7 @@ var ORM gorm.DB
 
 // GormInit init gorm ORM.
 func GormInit(cfg config.Config) gorm.DB {
+	fmt.Println(cfg.DatabaseUri)
 	db, err := gorm.Open("mysql", cfg.DatabaseUri)
 	db.DB()
 
