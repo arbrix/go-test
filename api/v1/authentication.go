@@ -3,8 +3,7 @@ package v1
 import (
 	"github.com/gin-gonic/gin"
 
-	"github.com/arbrix/go-test/api/response"
-	"github.com/arbrix/go-test/service/userService"
+	"github.com/arbrix/go-test/service/user"
 )
 
 // @Title Authentications
@@ -26,7 +25,7 @@ func Authentications(parentRoute *gin.RouterGroup) {
 // @Resource /authentications
 // @Router /authentications [post]
 func createUserAuthentication(c *gin.Context) {
-	status, err := userService.CreateUserAuthentication(c)
+	status, err := user.CreateUserAuthentication(c)
 	messageTypes := &response.MessageTypes{OK: "login.done",
 		Unauthorized: "login.error.passwordIncorrect",
 		NotFound:     "login.error.userNotFound"}
@@ -35,5 +34,5 @@ func createUserAuthentication(c *gin.Context) {
 		response.JSON(c, status, messageTypes, messages, err)
 		return
 	}
-	c.JSON(status, gin.H{"token": userService.JwtToken})
+	c.JSON(status, gin.H{"token": user.JwtToken})
 }

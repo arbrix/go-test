@@ -1,0 +1,5 @@
+{
+    "env": "dev",
+    "ListenAddress": "localhost:8080",
+    "DatabaseUri": "test:test@/test?charset=utf8&parseTime=True&loc=Local"
+}

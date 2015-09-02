@@ -1,0 +1,8 @@
+{
+    "api-url": "/api/v1",
+    "secret": "7Ml|j1(8apfeywbo|=<9'P8#7X<Na;&BJqmTqOXqphT4?$g@V!e2zuiH%M3#8zu3",
+    "oauth-url": "/api/v1/oauth",
+    "oauth-facebook-client-id": "880837541995402",
+    "oauth-facebook-client-secret": "ef23786d2930217f20e32fb622629562",
+    "oauth-facebook-redirect-url": "/api/v1/oauth/facebook/redirect"
+}

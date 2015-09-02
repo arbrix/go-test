@@ -3,9 +3,8 @@ package v1
 import (
 	"github.com/gin-gonic/gin"
 
-	"github.com/arbrix/go-test/api/response"
-	"github.com/arbrix/go-test/service/userService"
-	"github.com/arbrix/go-test/service/userService/userPermission"
+	"github.com/arbrix/go-test/service/user"
+	"github.com/arbrix/go-test/service/user/permission"
 )
 
 // @Title Users
@@ -31,7 +30,7 @@ func Users(parentRoute *gin.RouterGroup) {
 // @Resource /users
 // @Router /users [post]
 func createUser(c *gin.Context) {
-	status, err := userService.CreateUser(c)
+	status, err := user.CreateUser(c)
 	messageTypes := &response.MessageTypes{
 		OK:                  "registration.done",
 		Unauthorized:        "login.error.fail",
@@ -51,7 +50,7 @@ func createUser(c *gin.Context) {
 // @Resource /users
 // @Router /users/{id} [get]
 func retrieveUser(c *gin.Context) {
-	user, isAuthor, currentUserId, status, err := userService.RetrieveUser(c)
+	user, isAuthor, currentUserId, status, err := user.RetrieveUser(c)
 	if err == nil {
 		c.JSON(status, gin.H{"user": user, "isAuthor": isAuthor, "currentUserId": currentUserId})
 	} else {
@@ -70,7 +69,7 @@ func retrieveUser(c *gin.Context) {
 // @Resource /users
 // @Router /users [get]
 func retrieveUsers(c *gin.Context) {
-	users := userService.RetrieveUsers(c)
+	users := user.RetrieveUsers(c)
 	c.JSON(200, gin.H{"users": users})
 }
 
@@ -85,7 +84,7 @@ func retrieveUsers(c *gin.Context) {
 // @Resource /users
 // @Router /users/{id} [put]
 func updateUser(c *gin.Context) {
-	user, status, err := userService.UpdateUser(c)
+	user, status, err := user.UpdateUser(c)
 	if err == nil {
 		c.JSON(status, gin.H{"user": user})
 	} else {
@@ -109,7 +108,7 @@ func updateUser(c *gin.Context) {
 // @Resource /users
 // @Router /users/{id} [delete]
 func deleteUser(c *gin.Context) {
-	status, err := userService.DeleteUser(c)
+	status, err := user.DeleteUser(c)
 	if err == nil {
 		c.JSON(status, response.BasicResponse{})
 	} else {

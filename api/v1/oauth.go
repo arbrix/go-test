@@ -4,10 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/arbrix/go-test/api/response"
-	"github.com/arbrix/go-test/service/oauthService"
-	"github.com/arbrix/go-test/service/userService"
-	"github.com/arbrix/go-test/util/log"
+	"github.com/arbrix/go-test/service/oauth"
+	"github.com/arbrix/go-test/service/user"
 	"github.com/gin-gonic/gin"
 )
 
@@ -25,12 +23,12 @@ func Oauth(parentRoute *gin.RouterGroup) {
 // @Title retrieveOauthStatus
 // @Description Retrieve oauth connections.
 // @Accept  json
-// @Success 200 {array} oauthService.oauthStatusMap "OK"
+// @Success 200 {array} oauth.oauthStatusMap "OK"
 // @Failure 401 {object} response.BasicResponse "Authentication required"
 // @Resource /oauth
 // @Router /oauth [get]
 func retrieveOauthStatus(c *gin.Context) {
-	oauthStatus, status, err := oauthService.RetrieveOauthStatus(c)
+	oauthStatus, status, err := oauth.RetrieveOauthStatus(c)
 	if err == nil {
 		c.JSON(status, gin.H{"oauthStatus": oauthStatus})
 	} else {
@@ -48,7 +46,7 @@ func retrieveOauthStatus(c *gin.Context) {
 // @Resource /oauth
 // @Router /oauth/facebook [get]
 func facebookAuth(c *gin.Context) {
-	url, status := oauthService.FacebookURL()
+	url, status := oauth.FacebookURL()
 	c.JSON(status, gin.H{"url": url})
 }
 
@@ -62,7 +60,7 @@ func facebookAuth(c *gin.Context) {
 // @Resource /oauth
 // @Router /oauth/facebook [delete]
 func facebookRevoke(c *gin.Context) {
-	oauthStatus, status, err := oauthService.RevokeFacebook(c)
+	oauthStatus, status, err := oauth.RevokeFacebook(c)
 	if err == nil {
 		c.JSON(status, gin.H{"oauthStatus": oauthStatus})
 	} else {
@@ -84,9 +82,9 @@ func facebookRevoke(c *gin.Context) {
 // @Resource /oauth
 // @Router /oauth/facebook/redirect [get]
 func facebookRedirect(c *gin.Context) {
-	status, err := oauthService.OauthFacebook(c)
+	status, err := oauth.OauthFacebook(c)
 	if err != nil {
 		log.CheckErrorWithMessage(err, fmt.Sprintf("httpStatusCode : %d", status))
 	}
-	c.JSON(http.StatusAccepted, gin.H{"token": userService.JwtToken})
+	c.JSON(http.StatusAccepted, gin.H{"token": user.JwtToken})
 }

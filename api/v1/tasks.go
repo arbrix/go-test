@@ -4,9 +4,7 @@ import (
 	"github.com/gin-gonic/contrib/jwt"
 	"github.com/gin-gonic/gin"
 
-	"github.com/arbrix/go-test/api/response"
-	"github.com/arbrix/go-test/config"
-	"github.com/arbrix/go-test/service/taskService"
+	"github.com/arbrix/go-test/service/task"
 )
 
 // @Title Tasks
@@ -35,7 +33,7 @@ func Tasks(parentRoute *gin.RouterGroup) {
 // @Resource /tasks
 // @Router /tasks [post]
 func createTask(c *gin.Context) {
-	status, err := taskService.CreateTask(c)
+	status, err := task.CreateTask(c)
 	messageTypes := &response.MessageTypes{
 		OK:                  "creation.done",
 		Unauthorized:        "login.error.fail",
@@ -55,7 +53,7 @@ func createTask(c *gin.Context) {
 // @Resource /tasks
 // @Router /tasks/{id} [get]
 func retrieveTask(c *gin.Context) {
-	task, status, err := taskService.RetrieveTask(c)
+	task, status, err := task.RetrieveTask(c)
 	if err == nil {
 		c.JSON(status, gin.H{"task": task})
 	} else {
@@ -75,7 +73,7 @@ func retrieveTask(c *gin.Context) {
 // @Resource /tasks
 // @Router /tasks [get]
 func retrieveTasks(c *gin.Context) {
-	tasks := taskService.RetrieveTasks(c)
+	tasks := task.RetrieveTasks(c)
 	c.JSON(200, gin.H{"tasks": tasks})
 }
 
@@ -95,7 +93,7 @@ func retrieveTasks(c *gin.Context) {
 // @Resource /tasks
 // @Router /tasks/{id} [put]
 func updateTask(c *gin.Context) {
-	task, status, err := taskService.UpdateTask(c)
+	task, status, err := task.UpdateTask(c)
 	if err == nil {
 		c.JSON(status, gin.H{"task": task})
 	} else {
@@ -119,7 +117,7 @@ func updateTask(c *gin.Context) {
 // @Resource /tasks
 // @Router /tasks/{id} [delete]
 func deleteTask(c *gin.Context) {
-	_, status, err := taskService.MarkAsDeleted(c)
+	_, status, err := task.MarkAsDeleted(c)
 	if err == nil {
 		c.JSON(status, response.BasicResponse{})
 	} else {
@@ -143,7 +141,7 @@ func deleteTask(c *gin.Context) {
 // @Resource /tasks
 // @Router /tasks/del/{id} [delete]
 func realDeleteTask(c *gin.Context) {
-	status, err := taskService.DeleteTask(c)
+	status, err := task.DeleteTask(c)
 	if err == nil {
 		c.JSON(status, response.BasicResponse{})
 	} else {

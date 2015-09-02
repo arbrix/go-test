@@ -7,8 +7,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/arbrix/go-test/config"
-	"github.com/arbrix/go-test/web"
+	"github.com/arbrix/go-test/app"
 )
 
 func getConfig(path string) (config.Config, error) {
