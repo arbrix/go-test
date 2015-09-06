@@ -2,10 +2,12 @@ package app
 
 import (
 	//"time"
+	"flag"
 
 	//"github.com/arbrix/go-test/api/v1"
 	//"github.com/arbrix/go-test/util/middleware"
-	"github.com/gin-gonic/gin"
+	"github.com/labstack/echo"
+	mw "github.com/labstack/echo/middleware"
 )
 
 type App struct {
@@ -14,10 +16,16 @@ type App struct {
 }
 
 func (app *App) Run() {
-	r := gin.New()
+	var env string
+	flag.StringVar(&env, "env", "dev", "define environment: dev, prod, test (place config file *.json with the same name in ./config folder)")
+	flag.Parse()
+
+	app.conf.Load(env)
+
+	r := echo.New()
 	// r.Use(middleware.CORSMiddleware())
 	// r.Use(middleware.AccessLogger())
-	r.Use(gin.Recovery())
+	r.Use(mw.Recover())
 
 	// app.apiRoute(r)
 

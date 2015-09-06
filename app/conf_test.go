@@ -7,11 +7,11 @@ import (
 
 func makeConfig(env string) (*AppConfig, error) {
 	conf := &AppConfig{basePath: "/Users/arbrix/dev/goproj/src/github.com/arbrix/go-test/config/"}
-	err := conf.Init(env)
+	err := conf.Load(env)
 	return conf, err
 }
 
-func TestInit(t *testing.T) {
+func TestLoad(t *testing.T) {
 	_, err := makeConfig("dev")
 	if err != nil {
 		t.Error(err)

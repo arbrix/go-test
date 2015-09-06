@@ -8,7 +8,7 @@ import (
 
 //Config interface that describe methods for works with it
 type Config interface {
-	Init(path string) error
+	Load(env string) error
 	Get(key string) (interface{}, error)
 	GetAll() *map[string]interface{}
 }
@@ -18,7 +18,7 @@ type AppConfig struct {
 	options  map[string]interface{}
 }
 
-func (conf *AppConfig) Init(env string) error {
+func (conf *AppConfig) Load(env string) error {
 	conf.options = make(map[string]interface{})
 	confPathSet := []string{conf.basePath + "base.json"}
 	confPathSet = append(confPathSet, conf.basePath+env+".json")
