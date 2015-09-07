@@ -49,21 +49,21 @@ func (orm *AppOrm) Connect(conf Config) error {
 }
 
 func (orm *AppOrm) Create(model interface{}) error {
-	if orm.db.Create(&model).Error != nil {
+	if orm.db.Create(model).Error != nil {
 		return errors.New("The model is not created!")
 	}
 	return nil
 }
 
 func (orm *AppOrm) Find(model interface{}, id int64) error {
-	if orm.db.First(&model, id).RecordNotFound() {
+	if orm.db.First(model, id).RecordNotFound() {
 		return errors.New("The model is not found!")
 	}
 	return nil
 }
 
 func (orm *AppOrm) Update(model interface{}, fieldSet map[string]interface{}) error {
-	if orm.db.Model(&model).Update(fieldSet).Error != nil {
+	if orm.db.Model(model).Update(fieldSet).Error != nil {
 		return errors.New("The model is not updated!")
 	}
 	return nil
