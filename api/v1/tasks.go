@@ -40,7 +40,7 @@ func (t *Task) retrieve(c *echo.Context) error {
 	if err == nil {
 		c.JSON(status, task)
 	} else {
-		c.JSON(status, err)
+		c.JSON(status, err.Error())
 	}
 	return err
 
@@ -59,7 +59,7 @@ func (t *Task) update(c *echo.Context) error {
 	if err == nil {
 		c.JSON(status, task)
 	} else {
-		c.JSON(status, err)
+		c.JSON(status, err.Error())
 	}
 	return err
 }

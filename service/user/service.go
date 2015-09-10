@@ -35,7 +35,7 @@ func (s *Service) Create(c *echo.Context) (*model.User, error) {
 }
 
 func (s *Service) AddNew(u *model.User) (*model.User, error) {
-	var checkUser *model.User
+	checkUser := &model.User{}
 	if s.a.GetDB().First(checkUser, u) == nil {
 		return checkUser, errors.New("User already exists")
 	}

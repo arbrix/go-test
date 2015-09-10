@@ -1,7 +1,7 @@
 package model
 
 import (
-	"strconv"
+	"fmt"
 	"time"
 )
 
@@ -18,9 +18,5 @@ type Task struct {
 }
 
 func (t Task) String() string {
-	return "Title: " + t.Title + "; Desc: " + t.Description + "; Prior: " +
-		strconv.Itoa(t.Priority) + "; Crt: " + t.CreatedAt.Format(time.RFC3339) +
-		"; upd: " + t.UpdatedAt.Format(time.RFC3339) +
-		"; complete: " + strconv.FormatBool(t.IsCompleted) +
-		"; at: " + t.CompletedAt.Format(time.RFC3339)
+	return fmt.Sprintf("id: %d; title: %s; desc: %s; pri: %d; crt: %d; upd: %d; iscomp: %b; cmp: %d", t.ID, t.Title, t.Description, t.Priority, t.CreatedAt, t.UpdatedAt, t.IsCompleted, t.CompletedAt)
 }

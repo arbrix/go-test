@@ -1,7 +1,7 @@
 package model
 
 import (
-	"strconv"
+	"fmt"
 	"time"
 )
 
@@ -22,6 +22,6 @@ type LoginJSON struct {
 	Password string `json:"pass" form:"loginPassword" binding:"required"`
 }
 
-func (u User) String() string {
-	return "id: " + strconv.FormatInt(u.ID, 10) + "; email: " + u.Email + "; Name: " + u.Name + "; Crt: " + u.CreatedAt.Format(time.RFC3339) + "; upd: " + u.UpdatedAt.Format(time.RFC3339) + "; del: " + u.DeletedAt.Format(time.RFC3339)
+func (u *User) String() string {
+	return fmt.Sprintf("id: %d; email: %s; name: %s; crt: %d; upd: %d; del: %d", u.ID, u.Email, u.Name, u.CreatedAt, u.UpdatedAt, u.DeletedAt)
 }

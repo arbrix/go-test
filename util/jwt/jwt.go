@@ -84,7 +84,7 @@ func (t *Tokenizer) Check() echo.MiddlewareFunc {
 }
 
 func (t *Tokenizer) getSecretKey() (string, error) {
-	scrKey, err := t.a.GetConfig().Get("SecretKey")
+	scrKey, err := t.a.GetConfig().Get("secret")
 	if err != nil {
 		log.Fatalf("Secret not defined in config: %v\n", err)
 		return "", errors.New("Sorry, important options is not set via config files, please check it!")

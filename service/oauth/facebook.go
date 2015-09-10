@@ -3,12 +3,10 @@ package oauth
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strconv"
-	"strings"
 
 	"github.com/arbrix/go-test/common"
 	"github.com/arbrix/go-test/model"
@@ -109,7 +107,6 @@ func (fb *Facebook) Request(authResponse AuthResponse) (*http.Response, error) {
 // Login login with oauthUser's username.
 func (fb *Facebook) Login(c *echo.Context, user *model.User) (int, error) {
 	tokenizer := jwt.NewTokenizer(fb.a)
-	fmt.Println(user)
 	status, err := tokenizer.Create(c, user)
 	if err != nil {
 		return status, err
@@ -119,27 +116,20 @@ func (fb *Facebook) Login(c *echo.Context, user *model.User) (int, error) {
 
 // CreateUser creates oauth user.
 func (fb *Facebook) CreateUser(c *echo.Context, oauthUser *OauthUser) (*model.User, int, error) {
-	var u model.User
+	var u *model.User
 	tokenizer := jwt.NewTokenizer(fb.a)
 	token, err := tokenizer.Parse(c)
 	if err == nil && token.Valid {
-		u = model.User{
+		u = &model.User{
 			ID:    token.Claims["id"].(int64),
 			Email: token.Claims["email"].(string),
 			Name:  token.Claims["name"].(string),
 		}
-		return &u, http.StatusBadRequest, errors.New("User already authorized")
+		return u, http.StatusBadRequest, errors.New("User already authorized")
 	}
-	u = model.User{Email: oauthUser.Email, Name: oauthUser.Name}
-	if len(u.Name) == 0 {
-		if len(u.Email) > 0 {
-			u.Name = strings.Split(u.Email, "@")[0]
-		} else {
-			u.Name = "OauthUser"
-		}
-	}
+	u = &model.User{Email: oauthUser.Id + "@facebook.com", Name: oauthUser.Name}
 	usrSrv := user.NewUserService(fb.a)
-	usr, err := usrSrv.AddNew(&u)
+	usr, err := usrSrv.AddNew(u)
 	if err != nil {
 		return usr, http.StatusInternalServerError, errors.New("User is not created.")
 	}
@@ -149,10 +139,7 @@ func (fb *Facebook) CreateUser(c *echo.Context, oauthUser *OauthUser) (*model.Us
 // LoginOrCreate login or create with oauthUser
 func (fb *Facebook) LoginOrCreate(c *echo.Context, oauthUser *OauthUser) (int, error) {
 	user := &model.User{}
-	user.Email = oauthUser.Email
-	if user.Email == "" {
-		user.Email = oauthUser.Id + "@facebook.com"
-	}
+	user.Email = oauthUser.Id + "@facebook.com"
 	user.Name = oauthUser.Name
 	if fb.a.GetDB().First(user, user) == nil {
 		return fb.Login(c, user)
@@ -173,7 +160,6 @@ func (fb *Facebook) SetUser(response *http.Response) (OauthUser, error) {
 	if err != nil {
 		return *facebookUser, err
 	}
-	fmt.Printf("%s", string(body)) //TODO: delete after tests
 	json.Unmarshal(body, &facebookUser)
 	return *facebookUser, nil
 }
