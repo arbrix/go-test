@@ -2,31 +2,13 @@ package app
 
 import (
 	"errors"
+	"github.com/arbrix/go-test/common"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
 )
 
-type Orm interface {
-	IsConnected() bool
-	Connect(cong Config) error
-	Create(interface{}) error
-	Find(interface{}, interface{}) error
-	First(interface{}, interface{}) error
-	Update(interface{}, map[string]interface{}) error
-	Save(interface{}) error
-	Delete(interface{}) error
-}
-
 type AppOrm struct {
 	driver *gorm.DB
-}
-
-//for in tests
-func GetOrm4Test() (grm *AppOrm, err error) {
-	grm = &AppOrm{}
-	cnf := &TestConfig{}
-	err = grm.Connect(cnf)
-	return
 }
 
 func (orm *AppOrm) IsConnected() bool {
@@ -34,7 +16,7 @@ func (orm *AppOrm) IsConnected() bool {
 }
 
 //Connect init gorm ORM.
-func (orm *AppOrm) Connect(conf Config) error {
+func (orm *AppOrm) Connect(conf common.Config) error {
 	var err error
 	var db gorm.DB
 	if dbUri, err := conf.Get("DatabaseUri"); err == nil {
@@ -115,11 +97,19 @@ func (orm *AppOrm) GetDriver() *gorm.DB {
 type TestOrm struct {
 }
 
+//for in tests
+func GetOrm4Test() (grm *AppOrm, err error) {
+	grm = &AppOrm{}
+	cnf := &TestConfig{}
+	err = grm.Connect(cnf)
+	return
+}
+
 func (orm *TestOrm) IsConnected() bool {
 	return true
 }
 
-func (orm *TestOrm) Connect(cong Config) error {
+func (orm *TestOrm) Connect(cong common.Config) error {
 	return nil
 }
 

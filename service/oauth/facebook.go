@@ -9,7 +9,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/arbrix/go-test/app"
+	"github.com/arbrix/go-test/common"
 	"github.com/arbrix/go-test/model"
 	"github.com/arbrix/go-test/service/user"
 	"github.com/arbrix/go-test/util/jwt"
@@ -39,10 +39,10 @@ type Facebook struct {
 	oauth2.Config
 	url        string
 	RequestUrl *url.URL
-	a          *app.App
+	a          common.App
 }
 
-func (fb *Facebook) Init(a *app.App) error {
+func (fb *Facebook) Init(a common.App) error {
 	cID, err := a.GetConfig().Get("oauth-facebook-client-id")
 	if err != nil {
 		return err
@@ -107,8 +107,8 @@ func (fb *Facebook) Request(authResponse AuthResponse) (*http.Response, error) {
 
 // Login login with oauthUser's username.
 func (fb *Facebook) Login(c *echo.Context, user *model.User) (int, error) {
-	tokenizer := jwt.Token{}
-	status, err := tokenizer.Create(c, fb.a, user)
+	tokenizer := jwt.NewTokenizer(fb.a)
+	status, err := tokenizer.Create(c, user)
 	if err != nil {
 		return status, err
 	}
@@ -118,8 +118,8 @@ func (fb *Facebook) Login(c *echo.Context, user *model.User) (int, error) {
 // CreateUser creates oauth user.
 func (fb *Facebook) CreateUser(c *echo.Context, oauthUser *OauthUser) (*model.User, int, error) {
 	var u model.User
-	tokenizer := jwt.Token{}
-	token, err := tokenizer.Parse(c, fb.a)
+	tokenizer := jwt.NewTokenizer(fb.a)
+	token, err := tokenizer.Parse(c)
 	if err == nil && token.Valid {
 		u = model.User{
 			ID:    token.Claims["id"].(int64),
@@ -136,8 +136,8 @@ func (fb *Facebook) CreateUser(c *echo.Context, oauthUser *OauthUser) (*model.Us
 			u.Name = "OauthUser"
 		}
 	}
-	usrSrv := user.Service{}
-	usr, err := usrSrv.AddNew(&u, fb.a)
+	usrSrv := user.NewUserService(fb.a)
+	usr, err := usrSrv.AddNew(&u)
 	if err != nil {
 		return usr, http.StatusInternalServerError, errors.New("User is not created.")
 	}

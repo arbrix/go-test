@@ -2,7 +2,7 @@ package jwt
 
 import (
 	"errors"
-	"github.com/arbrix/go-test/app"
+	"github.com/arbrix/go-test/common"
 	"github.com/arbrix/go-test/model"
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo"
@@ -12,17 +12,23 @@ import (
 	"time"
 )
 
-type Token struct {
+type Tokenizer struct {
+	a common.App
+}
+
+func NewTokenizer(a common.App) *Tokenizer {
+	t := &Tokenizer{a: a}
+	return t
 }
 
 //Create is make new jwt and set it to context
-func (t *Token) Create(ec *echo.Context, a *app.App, usr *model.User) (int, error) {
+func (t *Tokenizer) Create(ec *echo.Context, usr *model.User) (int, error) {
 	token := jwt.New(jwt.GetSigningMethod("HS256"))
 	token.Claims["id"] = usr.ID
 	token.Claims["email"] = usr.Email
 	token.Claims["name"] = usr.Name
 	token.Claims["exp"] = time.Now().Add(time.Minute * 30).Unix()
-	scrKey, err := t.getSecretKey(a)
+	scrKey, err := t.getSecretKey()
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}
@@ -38,7 +44,7 @@ func (t *Token) Create(ec *echo.Context, a *app.App, usr *model.User) (int, erro
 
 // Parse is a "TokenExtractor" & "TokenParser" that takes a give request and extracts
 // the JWT token from the Authorization header and parse it.
-func (t *Token) Parse(ec *echo.Context, a *app.App) (*jwt.Token, error) {
+func (t *Tokenizer) Parse(ec *echo.Context) (*jwt.Token, error) {
 	authHeader := ec.Request().Header.Get("Authorization")
 	if authHeader == "" {
 		return nil, errors.New("JWT is not in Header, it is empty")
@@ -49,7 +55,7 @@ func (t *Token) Parse(ec *echo.Context, a *app.App) (*jwt.Token, error) {
 		log.Printf("Authorization header format must be Bearer {token}")
 		return nil, errors.New("JWT is not in Header")
 	}
-	scrKey, err := t.getSecretKey(a)
+	scrKey, err := t.getSecretKey()
 	if err != nil {
 		return nil, err
 	}
@@ -59,8 +65,26 @@ func (t *Token) Parse(ec *echo.Context, a *app.App) (*jwt.Token, error) {
 	return token, nil
 }
 
-func (t *Token) getSecretKey(a *app.App) (string, error) {
-	scrKey, err := a.GetConfig().Get("SecretKey")
+func (t *Tokenizer) Check() echo.MiddlewareFunc {
+	return func(h echo.HandlerFunc) echo.HandlerFunc {
+		return func(ec *echo.Context) error {
+			token, err := t.Parse(ec)
+			if err != nil {
+				return err
+			}
+			if token.Valid == false {
+				ec.Error(errors.New("JWT not valid"))
+			}
+			if err := h(ec); err != nil {
+				ec.Error(err)
+			}
+			return nil
+		}
+	}
+}
+
+func (t *Tokenizer) getSecretKey() (string, error) {
+	scrKey, err := t.a.GetConfig().Get("SecretKey")
 	if err != nil {
 		log.Fatalf("Secret not defined in config: %v\n", err)
 		return "", errors.New("Sorry, important options is not set via config files, please check it!")

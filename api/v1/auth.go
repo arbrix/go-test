@@ -1,8 +1,9 @@
 package v1
 
 import (
-	"github.com/arbrix/go-test/app"
+	"github.com/arbrix/go-test/common"
 	"github.com/arbrix/go-test/service/user"
+	"github.com/arbrix/go-test/util/jwt"
 	"github.com/labstack/echo"
 )
 
@@ -11,22 +12,28 @@ type Auth struct {
 }
 
 //Init Auth's route.
-func NewOauth(a *app.App, e *echo.Echo) *Auth {
-	au := &Auth{Common: Common{a: a, e: e}}
-	au.e.Router().Add(echo.POST, "/auth", au.login, ua.e)
+func NewAuth(a common.App, pg *echo.Group) *Auth {
+	au := &Auth{Common: Common{a: a, eg: pg}}
+	au.eg.Post("/auth", au.login)
 	return au
 }
 
 //login provide JWT in response if login success.
-func login(c *echo.Context) {
-	status, err := user.Login(c)
-	messageTypes := &response.MessageTypes{OK: "login.done",
-		Unauthorized: "login.error.passwordIncorrect",
-		NotFound:     "login.error.userNotFound"}
-	messages := &response.Messages{OK: "User logged in successfully."}
+func (au *Auth) login(c *echo.Context) error {
+	login := c.Param("login")
+	paswd := c.Param("pass")
+	us := user.NewUserService(au.a)
+	user, status, err := us.Login(login, paswd)
 	if err != nil {
-		response.JSON(c, status, messageTypes, messages, err)
-		return
+		c.JSON(status, err)
+		return err
 	}
-	c.JSON(status, gin.H{"token": user.JwtToken})
+	tokenizer := jwt.NewTokenizer(au.a)
+	status, err = tokenizer.Create(c, user)
+	if err != nil {
+		c.JSON(status, err)
+		return err
+	}
+	c.JSON(status, TokenJSON{Token: c.Get("jwt").(string)})
+	return nil
 }

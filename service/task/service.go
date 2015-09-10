@@ -5,18 +5,21 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/arbrix/go-test/app"
+	"github.com/arbrix/go-test/common"
 	"github.com/arbrix/go-test/model"
 	"github.com/labstack/echo"
 )
 
-var taskFields = []string{"title", "description", "priority", "createdAt", "updatedAt"}
-
 type Service struct {
+	a common.App
+}
+
+func NewTaskService(a common.App) *Service {
+	return &Service{a: a}
 }
 
 // Create creates a task.
-func (s *Service) Create(c *echo.Context, a *app.App) (int, error) {
+func (s *Service) Create(c *echo.Context) (int, error) {
 	var task model.Task
 	var err error
 
@@ -24,7 +27,7 @@ func (s *Service) Create(c *echo.Context, a *app.App) (int, error) {
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}
-	err = a.GetDB().Create(&task)
+	err = s.a.GetDB().Create(&task)
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}
@@ -32,27 +35,27 @@ func (s *Service) Create(c *echo.Context, a *app.App) (int, error) {
 }
 
 // Retrieve retrieves a task.
-func (s *Service) Retrieve(c *echo.Context, a *app.App) (*model.Task, int, error) {
+func (s *Service) Retrieve(c *echo.Context) (*model.Task, int, error) {
 	var task model.Task
 	id := c.Param("id")
-	if a.GetDB().First(&task, id) != nil {
+	if s.a.GetDB().First(&task, id) != nil {
 		return &task, http.StatusNotFound, errors.New("Task is not found.")
 	}
 	return &task, http.StatusOK, nil
 }
 
 // RetrieveAll retrieves tasks.
-func (s *Service) RetrieveAll(c *echo.Context, a *app.App) []*model.Task {
+func (s *Service) RetrieveAll(c *echo.Context) []*model.Task {
 	var tasks []*model.Task
-	a.GetDB().Find(&tasks, struct{}{})
+	s.a.GetDB().Find(&tasks, struct{}{})
 	return tasks
 }
 
 // Update updates a task.
-func (s *Service) Update(c *echo.Context, a *app.App) (*model.Task, int, error) {
+func (s *Service) Update(c *echo.Context) (*model.Task, int, error) {
 	id := c.Param("id")
 	var task model.Task
-	if a.GetDB().First(&task, id) != nil {
+	if s.a.GetDB().First(&task, id) != nil {
 		return &task, http.StatusNotFound, errors.New("Task is not found.")
 	}
 	err := c.Bind(&task)
@@ -67,20 +70,20 @@ func (s *Service) Update(c *echo.Context, a *app.App) (*model.Task, int, error) 
 	if c.Get("deleted") == true {
 		task.IsDeleted = true
 	}
-	if a.GetDB().Save(task) != nil {
+	if s.a.GetDB().Save(task) != nil {
 		return &task, http.StatusInternalServerError, errors.New("Task is not updated.")
 	}
 	return &task, http.StatusOK, nil
 }
 
 // DeleteTask deletes a task.
-func (s *Service) DeleteTask(c *echo.Context, a *app.App) (int, error) {
+func (s *Service) DeleteTask(c *echo.Context) (int, error) {
 	id := c.Param("id")
 	var task model.Task
-	if a.GetDB().First(&task, id) != nil {
+	if s.a.GetDB().First(&task, id) != nil {
 		return http.StatusNotFound, errors.New("Task is not found.")
 	}
-	if a.GetDB().Delete(&task) != nil {
+	if s.a.GetDB().Delete(&task) != nil {
 		return http.StatusInternalServerError, errors.New("Task is not deleted.")
 	}
 	return http.StatusOK, nil

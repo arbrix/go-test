@@ -6,22 +6,19 @@ import (
 	"os"
 )
 
-//Config interface that describe methods for works with it
-type Config interface {
-	Load(env string) error
-	Get(key string) (interface{}, error)
-	GetAll() *map[string]interface{}
-}
-
 type AppConfig struct {
 	basePath string
 	options  map[string]interface{}
 }
 
+func (conf *AppConfig) SetBasePath(path string) {
+	conf.basePath = path
+}
+
 func (conf *AppConfig) Load(env string) error {
 	conf.options = make(map[string]interface{})
-	confPathSet := []string{conf.basePath + "base.json"}
-	confPathSet = append(confPathSet, conf.basePath+env+".json")
+	confPathSet := []string{conf.basePath + "/base.json"}
+	confPathSet = append(confPathSet, conf.basePath+"/"+env+".json")
 	for _, path := range confPathSet {
 		src, err := conf.parsJson(path)
 		if err != nil {
@@ -68,6 +65,9 @@ func (conf *AppConfig) mergeOpt(src map[string]interface{}, rewrite bool) {
 }
 
 type TestConfig struct {
+}
+
+func (cnf *TestConfig) SetBasePath(path string) {
 }
 
 func (cnf *TestConfig) Load(env string) error {

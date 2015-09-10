@@ -1,155 +1,71 @@
 package v1
 
 import (
-	"github.com/gin-gonic/contrib/jwt"
 	"github.com/labstack/echo"
+	"net/http"
 
+	"github.com/arbrix/go-test/common"
 	"github.com/arbrix/go-test/service/task"
+	"github.com/arbrix/go-test/util/jwt"
 )
 
-// @Title Tasks
-// @Description Tasks's router group.
-func Tasks(parentRoute *gin.RouterGroup) {
-	route := parentRoute.Group("/tasks")
-	route.Use(jwt.Auth(config.SecretKey))
-	route.POST("", createTask)
-	route.GET("/:id", retrieveTask)
-	route.GET("", retrieveTasks)
-	route.PUT("/:id", updateTask)
-	route.DELETE("/:id", deleteTask)
-	parentRoute.DELETE("/task-del/:id", realDeleteTask)
+type Task struct {
+	Common
+	ts *task.Service
 }
 
-// @Title createTask
-// @Description Create a task.
-// @Accept  json
-// @Param   taskTitle       form   string  true        "Task Title."
-// @Param   taskDesc        form   string  true        "Task Description."
-// @Param   taskPriorit     form   int     true        "Task Priority."
-// @Success 201 {object} response.BasicResponse "Task is created successfully"
-// @Failure 401 {object} response.BasicResponse "Authentication required"
-// @Failure 404 {object} response.BasicResponse "User not logged in."
-// @Failure 500 {object} response.BasicResponse "Task is not created."
-// @Resource /tasks
-// @Router /tasks [post]
-func createTask(c *echo.Context) {
-	status, err := task.CreateTask(c)
-	messageTypes := &response.MessageTypes{
-		OK:                  "creation.done",
-		Unauthorized:        "login.error.fail",
-		NotFound:            "creation.error.fail",
-		InternalServerError: "creation.error.fail",
-	}
-	messages := &response.Messages{OK: "Task is created successfully."}
-	response.JSON(c, status, messageTypes, messages, err)
+//Init Task's route.
+func NewTask(a common.App, pg *echo.Group) *Task {
+	t := &Task{Common: Common{a: a, eg: pg}, ts: task.NewTaskService(a)}
+	tokenizer := jwt.NewTokenizer(a)
+	g := t.eg.Group("/tasks", tokenizer.Check())
+	g.Post("", t.create)
+	g.Get("/:id", t.retrieve)
+	g.Get("", t.retrieveAll)
+	g.Put("/:id", t.update)
+	g.Delete("/:id", t.delete)
+	return t
 }
 
-// @Title retrieveTask
-// @Description Retrieve a task.
-// @Accept  json
-// @Param   id        path    int     true        "Task ID"
-// @Success 200 {object} model.Task "OK"
-// @Failure 404 {object} response.BasicResponse "Not found"
-// @Resource /tasks
-// @Router /tasks/{id} [get]
-func retrieveTask(c *echo.Context) {
-	task, status, err := task.RetrieveTask(c)
+//create Create a task.
+func (t *Task) create(c *echo.Context) error {
+	status, err := t.ts.Create(c)
+	c.JSON(status, err)
+	return err
+}
+
+//rertieve Retrieve a task.
+func (t *Task) retrieve(c *echo.Context) error {
+	task, status, err := t.ts.Retrieve(c)
 	if err == nil {
-		c.JSON(status, gin.H{"task": task})
+		c.JSON(status, task)
 	} else {
-		messageTypes := &response.MessageTypes{
-			NotFound:     "task.error.notFound",
-			Unauthorized: "task.error.unauthorized",
-		}
-		response.ErrorJSON(c, status, messageTypes, err)
+		c.JSON(status, err)
 	}
+	return err
 
 }
 
-// @Title retrieveTasks
-// @Description Retrieve task array.
-// @Accept  json
-// @Success 200 {array} model.Task "OK"
-// @Resource /tasks
-// @Router /tasks [get]
-func retrieveTasks(c *echo.Context) {
-	tasks := task.RetrieveTasks(c)
-	c.JSON(200, gin.H{"tasks": tasks})
+//retrieve Retrieve task array.
+func (t *Task) retrieveAll(c *echo.Context) error {
+	tasks := t.ts.RetrieveAll(c)
+	c.JSON(http.StatusOK, tasks)
+	return nil
 }
 
-// @Title updateTask
-// @Description Update a task.
-// @Accept  json
-// @Param   id        path    int     true        "Task ID"
-// @Param   taskTitle       form   string  true        "Task Title."
-// @Param   taskDesc        form   string  true        "Task Description."
-// @Param   taskPriorit     form   int     true        "Task Priority."
-// @Param   taskCompleted   form   bool  true        "Task Complete mark."
-// @Param   taskDeleted     form   bool  true        "Task Delete mark."
-// @Success 200 {object} model.Task "OK"
-// @Failure 401 {object} response.BasicResponse "Authentication required"
-// @Failure 404 {object} response.BasicResponse "Not found"
-// @Failure 500 {object} response.BasicResponse "Task is not updated."
-// @Resource /tasks
-// @Router /tasks/{id} [put]
-func updateTask(c *echo.Context) {
-	task, status, err := task.UpdateTask(c)
+//update Update a task.
+func (t *Task) update(c *echo.Context) error {
+	task, status, err := t.ts.Update(c)
 	if err == nil {
-		c.JSON(status, gin.H{"task": task})
+		c.JSON(status, task)
 	} else {
-		messageTypes := &response.MessageTypes{
-			Unauthorized:        "task.error.unauthorized",
-			NotFound:            "task.error.notFound",
-			InternalServerError: "task.error.internalServerError",
-		}
-		response.ErrorJSON(c, status, messageTypes, err)
+		c.JSON(status, err)
 	}
+	return err
 }
 
-// @Title deleteTask
-// @Description Delete a task.
-// @Accept  json
-// @Param   id        path    int     true        "Task ID"
-// @Success 200 {object} response.BasicResponse
-// @Failure 401 {object} response.BasicResponse "Authentication required"
-// @Failure 404 {object} response.BasicResponse "Not found"
-// @Failure 500 {object} response.BasicResponse "Task is not deleted."
-// @Resource /tasks
-// @Router /tasks/{id} [delete]
-func deleteTask(c *echo.Context) {
-	_, status, err := task.MarkAsDeleted(c)
-	if err == nil {
-		c.JSON(status, response.BasicResponse{})
-	} else {
-		messageTypes := &response.MessageTypes{
-			Unauthorized:        "user.error.unauthorized",
-			NotFound:            "task.error.notFound",
-			InternalServerError: "setting.leaveOurService.fail",
-		}
-		response.ErrorJSON(c, status, messageTypes, err)
-	}
-}
-
-// @Title realDeleteTask
-// @Description Delete a task from DB.
-// @Accept  json
-// @Param   id        path    int     true        "Task ID"
-// @Success 200 {object} response.BasicResponse
-// @Failure 401 {object} response.BasicResponse "Authentication required"
-// @Failure 404 {object} response.BasicResponse "Not found"
-// @Failure 500 {object} response.BasicResponse "Task is not deleted."
-// @Resource /tasks
-// @Router /tasks/del/{id} [delete]
-func realDeleteTask(c *echo.Context) {
-	status, err := task.DeleteTask(c)
-	if err == nil {
-		c.JSON(status, response.BasicResponse{})
-	} else {
-		messageTypes := &response.MessageTypes{
-			Unauthorized:        "user.error.unauthorized",
-			NotFound:            "task.error.notFound",
-			InternalServerError: "setting.leaveOurService.fail",
-		}
-		response.ErrorJSON(c, status, messageTypes, err)
-	}
+//delete Mark Task as Deleted.
+func (t *Task) delete(c *echo.Context) error {
+	c.Set("deleted", true)
+	return t.update(c)
 }
