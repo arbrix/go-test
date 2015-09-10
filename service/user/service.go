@@ -2,8 +2,10 @@ package user
 
 import (
 	"errors"
+	"log"
 	"net/http"
 	"regexp"
+	"time"
 
 	"golang.org/x/crypto/bcrypt"
 
@@ -42,6 +44,7 @@ func (s *Service) AddNew(u *model.User) (*model.User, error) {
 	if len(u.Password) == 0 {
 		strHelper := &helper.Str{}
 		u.Password = strHelper.GenRand(12)
+		log.Println(u.Password)
 	}
 
 	hashPassword, err := bcrypt.GenerateFromPassword([]byte(u.Password), 10)
@@ -49,6 +52,8 @@ func (s *Service) AddNew(u *model.User) (*model.User, error) {
 	if err != nil {
 		return nil, err
 	}
+	now := time.Now()
+	u.CreatedAt = &now
 	err = s.a.GetDB().Create(u)
 	if err != nil {
 		return nil, err

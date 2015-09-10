@@ -45,31 +45,27 @@ copy from github.com/dorajistyle/goyangi
 Structure
 ```
 - api           //REST API, routes, resource
+- app           //Core of application
+- common        //General interfaces
 - config        //general system configuration
 - db            //gorm init and for goose migration component
 - model         //description of DB entity
 - service       //business logic
-- tests
 - util          //helpers and tools
-- web           //server and middleware
-- conf.json     //configuration file
 - main.go       //application
 - README.md
 ```
 
 ### Install
 ```
-go get github.com/gin-gonic/gin
-go get github.com/gin-gonic/contrib
+go get github.com/arbrix/go-test
+go get github.com/labstack/echo
 go get github.com/jinzhu/gorm
 go get github.com/go-sql-driver/mysql
 go get bitbucket.org/liamstask/goose/cmd/goose
 go get golang.org/x/crypto/bcrypt
 go get github.com/dgrijalva/jwt-go
 go get golang.org/x/oauth2
-go get github.com/Sirupsen/logrus
-go get gopkg.in/natefinch/lumberjack.v2
-go get github.com/smartystreets/goconvey/convey
 go get github.com/stretchr/testify/assert
 goose -path="src/github.com/arbrix/go-test/db" up #table: test; user: test; password: test; should exists or change dbconf.yml and conf.json
 ```
@@ -79,21 +75,4 @@ goose -path="src/github.com/arbrix/go-test/db" up #table: test; user: test; pass
 cp src/github.com/arbrix/go-test/conf.json ./
 # vim conf.json
 go-test
-```
-
-### Use & Test
-```
-json request body:
--- create user (POST /api/v1/users):
-{"name":"test1","email":"test1@test.net","pass":"12345"}
--- login user (POST /api/v1/authorization):
-{"login":"jonas","pass":"12345"}
--- create task (POST /api/v1/tasks):
-{"title":"test title","desc":"test description","priority":1}
--- list tasks (GET /api/v1/tasks):
-{}
--- update task (PUT /api/v1/tasks/:id):
-{"title":"test title","desc":"test description","priority":1,"completed":true}
--- delete tasks (DELETE /api/v1/tasks/:id):
-{}
 ```

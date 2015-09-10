@@ -70,10 +70,12 @@ func (t *Tokenizer) Check() echo.MiddlewareFunc {
 		return func(ec *echo.Context) error {
 			token, err := t.Parse(ec)
 			if err != nil {
-				return err
+				log.Println(err.Error())
+				ec.Error(echo.NewHTTPError(http.StatusInternalServerError))
 			}
 			if token.Valid == false {
-				ec.Error(errors.New("JWT not valid"))
+				ec.Error(echo.NewHTTPError(http.StatusForbidden))
+				return nil
 			}
 			if err := h(ec); err != nil {
 				ec.Error(err)
