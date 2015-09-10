@@ -21,9 +21,6 @@ func NewApp(c common.Config, db common.Orm) *App {
 }
 
 func (a *App) GetDB() common.Orm {
-	if a.db.IsConnected() == false {
-		a.db.Connect(a.conf)
-	}
 	return a.db
 }
 
@@ -40,6 +37,7 @@ func (app *App) Run() error {
 	if err != nil {
 		return err
 	}
+	err = app.db.Connect(app.conf)
 
 	e := echo.New()
 	e.Use(middleware.CORSMiddleware())

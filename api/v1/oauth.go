@@ -2,6 +2,7 @@ package v1
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/arbrix/go-test/common"
@@ -40,6 +41,7 @@ func (oa *Oauth) facebookAuth(c *echo.Context) error {
 func (oa *Oauth) facebookRedirect(c *echo.Context) error {
 	status, err := oa.fb.Oauth(c)
 	if err != nil {
+		log.Printf("httpStatusCode : %d; error: %v", status, err)
 		c.JSON(status, fmt.Sprintf("httpStatusCode : %d; error: %v", status, err))
 		return err
 	}

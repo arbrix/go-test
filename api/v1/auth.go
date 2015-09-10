@@ -2,9 +2,11 @@ package v1
 
 import (
 	"github.com/arbrix/go-test/common"
+	"github.com/arbrix/go-test/model"
 	"github.com/arbrix/go-test/service/user"
 	"github.com/arbrix/go-test/util/jwt"
 	"github.com/labstack/echo"
+	"net/http"
 )
 
 type Auth struct {
@@ -20,10 +22,14 @@ func NewAuth(a common.App, pg *echo.Group) *Auth {
 
 //login provide JWT in response if login success.
 func (au *Auth) login(c *echo.Context) error {
-	login := c.Param("login")
-	paswd := c.Param("pass")
+	var loginData model.LoginJSON
+	err := c.Bind(loginData)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, err)
+		return err
+	}
 	us := user.NewUserService(au.a)
-	user, status, err := us.Login(login, paswd)
+	user, status, err := us.Login(loginData.Email, loginData.Password)
 	if err != nil {
 		c.JSON(status, err)
 		return err

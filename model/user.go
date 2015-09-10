@@ -1,6 +1,7 @@
 package model
 
 import (
+	"strconv"
 	"time"
 )
 
@@ -19,4 +20,8 @@ type User struct {
 type LoginJSON struct {
 	Email    string `json:"login" form:"loginEmail" binding:"required"`
 	Password string `json:"pass" form:"loginPassword" binding:"required"`
+}
+
+func (u User) String() string {
+	return "id: " + strconv.FormatInt(u.ID, 10) + "; email: " + u.Email + "; Name: " + u.Name + "; Crt: " + u.CreatedAt.Format(time.RFC3339) + "; upd: " + u.UpdatedAt.Format(time.RFC3339) + "; del: " + u.DeletedAt.Format(time.RFC3339)
 }

@@ -10,7 +10,6 @@ type Config interface {
 
 //Orm interface is describe methods for persistant data in DB
 type Orm interface {
-	IsConnected() bool
 	Connect(cong Config) error
 	Create(interface{}) error
 	Find(interface{}, interface{}) error

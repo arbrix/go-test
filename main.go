@@ -17,6 +17,6 @@ func main() {
 
 	err = a.Run()
 	if err != nil {
-		fmt.Println(err)
+		fmt.Printf("%v", err)
 	}
 }

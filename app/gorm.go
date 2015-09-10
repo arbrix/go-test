@@ -11,10 +11,6 @@ type AppOrm struct {
 	driver *gorm.DB
 }
 
-func (orm *AppOrm) IsConnected() bool {
-	return orm.driver.DB().Ping() == nil
-}
-
 //Connect init gorm ORM.
 func (orm *AppOrm) Connect(conf common.Config) error {
 	var err error

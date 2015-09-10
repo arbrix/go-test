@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/arbrix/go-test/common"
@@ -108,6 +109,7 @@ func (fb *Facebook) Request(authResponse AuthResponse) (*http.Response, error) {
 // Login login with oauthUser's username.
 func (fb *Facebook) Login(c *echo.Context, user *model.User) (int, error) {
 	tokenizer := jwt.NewTokenizer(fb.a)
+	fmt.Println(user)
 	status, err := tokenizer.Create(c, user)
 	if err != nil {
 		return status, err
@@ -146,9 +148,13 @@ func (fb *Facebook) CreateUser(c *echo.Context, oauthUser *OauthUser) (*model.Us
 
 // LoginOrCreate login or create with oauthUser
 func (fb *Facebook) LoginOrCreate(c *echo.Context, oauthUser *OauthUser) (int, error) {
-	var user *model.User
-
-	if fb.a.GetDB().First(user, map[string]interface{}{"email": oauthUser.Email, "name": oauthUser.Name}) == nil {
+	user := &model.User{}
+	user.Email = oauthUser.Email
+	if user.Email == "" {
+		user.Email = oauthUser.Id + "@facebook.com"
+	}
+	user.Name = oauthUser.Name
+	if fb.a.GetDB().First(user, user) == nil {
 		return fb.Login(c, user)
 	}
 
@@ -167,7 +173,7 @@ func (fb *Facebook) SetUser(response *http.Response) (OauthUser, error) {
 	if err != nil {
 		return *facebookUser, err
 	}
-	fmt.Println("%s", body) //TODO: delete after tests
+	fmt.Printf("%s", string(body)) //TODO: delete after tests
 	json.Unmarshal(body, &facebookUser)
 	return *facebookUser, nil
 }
@@ -176,10 +182,13 @@ func (fb *Facebook) SetUser(response *http.Response) (OauthUser, error) {
 func (fb *Facebook) Oauth(c *echo.Context) (int, error) {
 	var authResponse AuthResponse
 	var oauthUser OauthUser
-	err := c.Bind(&authResponse)
-	if err != nil {
-		return http.StatusInternalServerError, err
-	}
+	authResponse.Authuser, _ = strconv.Atoi(c.Form("authuser"))
+	authResponse.Code = c.Form("code")
+	authResponse.ImageName = c.Form("imageName")
+	authResponse.NumSessions, _ = strconv.Atoi(c.Form("num_sessions"))
+	authResponse.SessionState = c.Form("sessions_state")
+	authResponse.State = c.Form("state")
+	authResponse.prompt = c.Form("promt")
 	response, err := fb.Request(authResponse)
 	if err != nil {
 		return http.StatusInternalServerError, err

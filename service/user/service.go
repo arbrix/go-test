@@ -36,7 +36,7 @@ func (s *Service) Create(c *echo.Context) (*model.User, error) {
 
 func (s *Service) AddNew(u *model.User) (*model.User, error) {
 	var checkUser *model.User
-	if s.a.GetDB().Find(checkUser, map[string]interface{}{"email": u.Email}) == nil {
+	if s.a.GetDB().First(checkUser, u) == nil {
 		return checkUser, errors.New("User already exists")
 	}
 	if len(u.Password) == 0 {
@@ -63,15 +63,17 @@ func (s *Service) Login(login, paswd string) (*model.User, int, error) {
 	if paswd == "" {
 		return nil, http.StatusNotFound, errors.New("password could't be empty.")
 	}
-	var user model.User
+	user := &model.User{}
 	//From github.com/asaskevich/govalidator
 	emailPattern := "^(((([a-zA-Z]|\\d|[!#\\$%&'\\*\\+\\-\\/=\\?\\^_`{\\|}~]|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])+(\\.([a-zA-Z]|\\d|[!#\\$%&'\\*\\+\\-\\/=\\?\\^_`{\\|}~]|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])+)*)|((\\x22)((((\\x20|\\x09)*(\\x0d\\x0a))?(\\x20|\\x09)+)?(([\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x7f]|\\x21|[\\x23-\\x5b]|[\\x5d-\\x7e]|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])|(\\([\\x01-\\x09\\x0b\\x0c\\x0d-\\x7f]|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}]))))*(((\\x20|\\x09)*(\\x0d\\x0a))?(\\x20|\\x09)+)?(\\x22)))@((([a-zA-Z]|\\d|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])|(([a-zA-Z]|\\d|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])([a-zA-Z]|\\d|-|\\.|_|~|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])*([a-zA-Z]|\\d|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])))\\.)+(([a-zA-Z]|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])|(([a-zA-Z]|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])([a-zA-Z]|\\d|-|\\.|_|~|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])*([a-zA-Z]|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])))\\.?$"
 	if regexp.MustCompile(emailPattern).MatchString(login) {
-		if s.a.GetDB().Find(&user, map[string]interface{}{"email": login}) != nil {
+		user.Email = login
+		if s.a.GetDB().First(user, user) != nil {
 			return nil, http.StatusNotFound, errors.New("User is not found by email.")
 		}
 	} else {
-		if s.a.GetDB().Find(&user, map[string]interface{}{"name": login}) != nil {
+		user.Name = login
+		if s.a.GetDB().First(user, user) != nil {
 			return nil, http.StatusNotFound, errors.New("User is not found by name.")
 		}
 	}
@@ -79,5 +81,5 @@ func (s *Service) Login(login, paswd string) (*model.User, int, error) {
 	if err != nil {
 		return nil, http.StatusUnauthorized, errors.New("Password incorrect.")
 	}
-	return &user, http.StatusOK, nil
+	return user, http.StatusOK, nil
 }
