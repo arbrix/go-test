@@ -10,7 +10,7 @@ type Task struct {
 	Title       string     `json:"title" sql:"type:varchar(128)" gorm:"column:title"`
 	Description string     `json:"desc" sql:"type:varchar(1024)" gorm:"column:description"`
 	Priority    int        `json:"priority" sql:"DEFAULT:0" gorm:"column:priority"`
-	CreatedAt   *time.Time `json:"created" gorm:"column:created"`
+	CreatedAt   *time.Time `json:"created" sql:"DEFAULT:current_timestamp" gorm:"column:created"`
 	UpdatedAt   *time.Time `json:"updated" gorm:"column:updated"`
 	CompletedAt *time.Time `json:"completed" gorm:"column:completed"`
 	IsDeleted   bool       `json:"isDeleted" gorm:"column:isDeleted"`

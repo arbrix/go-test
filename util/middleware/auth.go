@@ -1,11 +1,11 @@
 package middleware
 
 import (
-	"github.com/gin-gonic/gin"
+	"github.com/labstack/echo"
 )
 
 func CheckHeader() gin.HandlerFunc {
-	return func(c *gin.Context) {
+	return func(c *echo.Context) {
 		headerKey := c.Request.Header.Get("Authorization")
 		if headerKey != "Bearer testkey123" {
 			c.JSON(403, gin.H{"error": "authorization problem"})

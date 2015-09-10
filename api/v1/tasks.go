@@ -2,7 +2,7 @@ package v1
 
 import (
 	"github.com/gin-gonic/contrib/jwt"
-	"github.com/gin-gonic/gin"
+	"github.com/labstack/echo"
 
 	"github.com/arbrix/go-test/service/task"
 )
@@ -32,7 +32,7 @@ func Tasks(parentRoute *gin.RouterGroup) {
 // @Failure 500 {object} response.BasicResponse "Task is not created."
 // @Resource /tasks
 // @Router /tasks [post]
-func createTask(c *gin.Context) {
+func createTask(c *echo.Context) {
 	status, err := task.CreateTask(c)
 	messageTypes := &response.MessageTypes{
 		OK:                  "creation.done",
@@ -52,7 +52,7 @@ func createTask(c *gin.Context) {
 // @Failure 404 {object} response.BasicResponse "Not found"
 // @Resource /tasks
 // @Router /tasks/{id} [get]
-func retrieveTask(c *gin.Context) {
+func retrieveTask(c *echo.Context) {
 	task, status, err := task.RetrieveTask(c)
 	if err == nil {
 		c.JSON(status, gin.H{"task": task})
@@ -72,7 +72,7 @@ func retrieveTask(c *gin.Context) {
 // @Success 200 {array} model.Task "OK"
 // @Resource /tasks
 // @Router /tasks [get]
-func retrieveTasks(c *gin.Context) {
+func retrieveTasks(c *echo.Context) {
 	tasks := task.RetrieveTasks(c)
 	c.JSON(200, gin.H{"tasks": tasks})
 }
@@ -92,7 +92,7 @@ func retrieveTasks(c *gin.Context) {
 // @Failure 500 {object} response.BasicResponse "Task is not updated."
 // @Resource /tasks
 // @Router /tasks/{id} [put]
-func updateTask(c *gin.Context) {
+func updateTask(c *echo.Context) {
 	task, status, err := task.UpdateTask(c)
 	if err == nil {
 		c.JSON(status, gin.H{"task": task})
@@ -116,7 +116,7 @@ func updateTask(c *gin.Context) {
 // @Failure 500 {object} response.BasicResponse "Task is not deleted."
 // @Resource /tasks
 // @Router /tasks/{id} [delete]
-func deleteTask(c *gin.Context) {
+func deleteTask(c *echo.Context) {
 	_, status, err := task.MarkAsDeleted(c)
 	if err == nil {
 		c.JSON(status, response.BasicResponse{})
@@ -140,7 +140,7 @@ func deleteTask(c *gin.Context) {
 // @Failure 500 {object} response.BasicResponse "Task is not deleted."
 // @Resource /tasks
 // @Router /tasks/del/{id} [delete]
-func realDeleteTask(c *gin.Context) {
+func realDeleteTask(c *echo.Context) {
 	status, err := task.DeleteTask(c)
 	if err == nil {
 		c.JSON(status, response.BasicResponse{})

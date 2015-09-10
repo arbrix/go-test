@@ -4,87 +4,46 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/arbrix/go-test/app"
 	"github.com/arbrix/go-test/service/oauth"
-	"github.com/arbrix/go-test/service/user"
-	"github.com/gin-gonic/gin"
+	"github.com/labstack/echo"
 )
 
-// @Title Oauth
-// @Description Oauth's router group.
-func Oauth(parentRoute *gin.RouterGroup) {
-
-	route := parentRoute.Group("/oauth")
-	route.GET("", retrieveOauthStatus)
-
-	route.GET("/facebook", facebookAuth)
-	route.GET("/facebook/redirect", facebookRedirect)
+type Oauth struct {
+	Common
+	fb *oauth.Facebook
 }
 
-// @Title retrieveOauthStatus
-// @Description Retrieve oauth connections.
-// @Accept  json
-// @Success 200 {array} oauth.oauthStatusMap "OK"
-// @Failure 401 {object} response.BasicResponse "Authentication required"
-// @Resource /oauth
-// @Router /oauth [get]
-func retrieveOauthStatus(c *gin.Context) {
-	oauthStatus, status, err := oauth.RetrieveOauthStatus(c)
-	if err == nil {
-		c.JSON(status, gin.H{"oauthStatus": oauthStatus})
-	} else {
-		messageTypes := &response.MessageTypes{
-			Unauthorized: "oauth.error.unauthorized",
-		}
-		response.ErrorJSON(c, status, messageTypes, err)
-	}
+type UrlJSON struct {
+	Url string `json:"url"`
 }
 
-// @Title facebookAuth
-// @Description Get facebook oauth url.
-// @Accept  json
-// @Success 200 {object} gin.H "{url: oauthURL}"
-// @Resource /oauth
-// @Router /oauth/facebook [get]
-func facebookAuth(c *gin.Context) {
-	url, status := oauth.FacebookURL()
-	c.JSON(status, gin.H{"url": url})
+type TokenJSON struct {
+	Token string `json:"token"`
 }
 
-// @Title facebookRevoke
-// @Description Get facebook oauth url.
-// @Accept  json
-// @Success 200 {object} gin.H "Revoked"
-// @Failure 401 {object} response.BasicResponse "Authentication required"
-// @Failure 404 {object} response.BasicResponse "Connection is not found"
-// @Failure 500 {object} response.BasicResponse "Connection not revoked from user"
-// @Resource /oauth
-// @Router /oauth/facebook [delete]
-func facebookRevoke(c *gin.Context) {
-	oauthStatus, status, err := oauth.RevokeFacebook(c)
-	if err == nil {
-		c.JSON(status, gin.H{"oauthStatus": oauthStatus})
-	} else {
-		messageTypes := &response.MessageTypes{
-			Unauthorized:        "oauth.error.unauthorized",
-			NotFound:            "oauth.error.notFound",
-			InternalServerError: "oauth.error.internalServerError"}
-		response.ErrorJSON(c, status, messageTypes, err)
-	}
+//Init Oauth's router group.
+func NewOauth(a *app.App, e *echo.Echo) *Oauth {
+	facebook := &oauth.Facebook{}
+	oa := &Oauth{Common: Common{a: a, e: e}, fb: facebook}
+	oa.fb.Init(oa.a)
+	g := oa.e.Group("/oauth")
+	g.Get("/facebook", oa.facebookAuth)
+	g.Get("/facebook/redirect", oa.facebookRedirect)
+	return oa
 }
 
-// @Title facebookRedirect
-// @Description Redirect from Facebook oauth.
-// @Accept  json
-// @Success 303 {object} response.BasicResponse "Connection linked."
-// @Failure 401 {object} response.BasicResponse "Authentication required"
-// @Failure 404 {object} response.BasicResponse "User is not found"
-// @Failure 500 {object} response.BasicResponse "Connection not linked"
-// @Resource /oauth
-// @Router /oauth/facebook/redirect [get]
-func facebookRedirect(c *gin.Context) {
-	status, err := oauth.OauthFacebook(c)
+//facebookAuth Get facebook oauth url.
+func (oa *Oauth) facebookAuth(c *echo.Context) {
+	url := oa.fb.URL()
+	c.JSON(http.StatusOK, UrlJSON{Url: url})
+}
+
+//facebookRedirect Redirect from Facebook oauth.
+func (oa *Oauth) facebookRedirect(c *echo.Context) {
+	status, err := oa.fb.Oauth(c)
 	if err != nil {
-		log.CheckErrorWithMessage(err, fmt.Sprintf("httpStatusCode : %d", status))
+		c.JSON(status, fmt.Sprintf("httpStatusCode : %d; error: %v", status, err))
 	}
-	c.JSON(http.StatusAccepted, gin.H{"token": user.JwtToken})
+	c.JSON(http.StatusAccepted, TokenJSON{Token: c.Get("jwt").(string)})
 }

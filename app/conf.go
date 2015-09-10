@@ -66,3 +66,27 @@ func (conf *AppConfig) mergeOpt(src map[string]interface{}, rewrite bool) {
 		conf.options[key] = val
 	}
 }
+
+type TestConfig struct {
+}
+
+func (cnf *TestConfig) Load(env string) error {
+	return nil
+}
+
+func (cnf *TestConfig) Get(key string) (interface{}, error) {
+	switch key {
+	case "env":
+		return "dev", nil
+	case "DatabaseUri":
+		return "test:test@/test?charset=utf8&parseTime=True&loc=Local", nil
+	case "SecretKey":
+		return "sdkfaSWerjPDFEjiRwErfjOSDFIj39024@#4()urr2,nasroiu3@#$I23Sf0(Ur23ks0f9@#rjSf0W#rjl23kng0-)I#l23n", nil
+	default:
+		return nil, errors.New("key: " + key + " not defined!")
+	}
+}
+
+func (cnf *TestConfig) GetAll() *map[string]interface{} {
+	return nil
+}

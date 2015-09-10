@@ -6,13 +6,13 @@ CREATE TABLE task (
     title varchar(128),
     description varchar(1024),
     priority int DEFAULT 0,
-    created datetime,
-    updated datetime,
-    completed datetime,
-    isDeleted bool DEFAULT false,
-    isCompleted bool DEFAULT false,
+    created timestamp,
+    updated timestamp,
+    completed timestamp,
+    isDeleted boolean DEFAULT false,
+    isCompleted boolean DEFAULT false,
     PRIMARY KEY(id)
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- +goose Down
 -- SQL section 'Down' is executed when this migration is rolled back

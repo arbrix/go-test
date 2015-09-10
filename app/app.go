@@ -15,6 +15,17 @@ type App struct {
 	db   Orm
 }
 
+func (a *App) GetDB() Orm {
+	if a.db.IsConnected() == false {
+		a.db.Connect(a.conf)
+	}
+	return a.db
+}
+
+func (a *App) GetConfig() Config {
+	return a.conf
+}
+
 func (app *App) Run() {
 	var env string
 	flag.StringVar(&env, "env", "dev", "define environment: dev, prod, test (place config file *.json with the same name in ./config folder)")
@@ -32,6 +43,11 @@ func (app *App) Run() {
 	if addr, err := app.conf.Get("ListenAddress"); err == nil {
 		r.Run(addr.(string))
 	}
+}
+
+func (a *App) TestInit(db Orm, cnf Config) {
+	a.db = db
+	a.conf = cnf
 }
 
 // apiRoute contains router groups for API

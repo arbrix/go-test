@@ -7,19 +7,33 @@ import (
 )
 
 type Orm interface {
+	IsConnected() bool
 	Connect(cong Config) error
 	Create(interface{}) error
-	Find(interface{}, int64) error
+	Find(interface{}, interface{}) error
+	First(interface{}, interface{}) error
 	Update(interface{}, map[string]interface{}) error
 	Save(interface{}) error
 	Delete(interface{}) error
 }
 
 type AppOrm struct {
-	db gorm.DB
+	driver *gorm.DB
 }
 
-// Init init gorm ORM.
+//for in tests
+func GetOrm4Test() (grm *AppOrm, err error) {
+	grm = &AppOrm{}
+	cnf := &TestConfig{}
+	err = grm.Connect(cnf)
+	return
+}
+
+func (orm *AppOrm) IsConnected() bool {
+	return orm.driver.DB().Ping() == nil
+}
+
+//Connect init gorm ORM.
 func (orm *AppOrm) Connect(conf Config) error {
 	var err error
 	var db gorm.DB
@@ -44,40 +58,47 @@ func (orm *AppOrm) Connect(conf Config) error {
 	if err != nil {
 		return err
 	}
-	orm.db = db
+	orm.driver = &db
 	return nil
 }
 
 func (orm *AppOrm) Create(model interface{}) error {
-	if orm.db.Create(model).Error != nil {
+	if orm.driver.Create(model).Error != nil {
 		return errors.New("The model is not created!")
 	}
 	return nil
 }
 
-func (orm *AppOrm) Find(model interface{}, id int64) error {
-	if orm.db.First(model, id).RecordNotFound() {
+func (orm *AppOrm) Find(models interface{}, vars interface{}) error {
+	if orm.driver.Find(models, vars).RecordNotFound() {
+		return errors.New("There is no one model found!")
+	}
+	return nil
+}
+
+func (orm *AppOrm) First(model interface{}, vars interface{}) error {
+	if orm.driver.First(model, vars).RecordNotFound() {
 		return errors.New("The model is not found!")
 	}
 	return nil
 }
 
 func (orm *AppOrm) Update(model interface{}, fieldSet map[string]interface{}) error {
-	if orm.db.Model(model).Update(fieldSet).Error != nil {
+	if orm.driver.Model(model).Update(fieldSet).Error != nil {
 		return errors.New("The model is not updated!")
 	}
 	return nil
 }
 
 func (orm *AppOrm) Save(model interface{}) error {
-	if orm.db.Save(model).Error != nil {
+	if orm.driver.Save(model).Error != nil {
 		return errors.New("The model is not saved correctly!")
 	}
 	return nil
 }
 
 func (orm *AppOrm) Delete(model interface{}) error {
-	if orm.db.Delete(model).Error != nil {
+	if orm.driver.Delete(model).Error != nil {
 		return errors.New("The model is not deleted correctly!")
 	}
 	return nil
@@ -88,5 +109,40 @@ func (orm *AppOrm) Close() error {
 }
 
 func (orm *AppOrm) GetDriver() *gorm.DB {
-	return &orm.db
+	return orm.driver
+}
+
+type TestOrm struct {
+}
+
+func (orm *TestOrm) IsConnected() bool {
+	return true
+}
+
+func (orm *TestOrm) Connect(cong Config) error {
+	return nil
+}
+
+func (orm *TestOrm) Create(interface{}) error {
+	return nil
+}
+
+func (orm *TestOrm) Find(interface{}, interface{}) error {
+	return nil
+}
+
+func (orm *TestOrm) First(interface{}, interface{}) error {
+	return nil
+}
+
+func (orm *TestOrm) Update(interface{}, map[string]interface{}) error {
+	return nil
+}
+
+func (orm *TestOrm) Save(interface{}) error {
+	return nil
+}
+
+func (orm *TestOrm) Delete(interface{}) error {
+	return nil
 }

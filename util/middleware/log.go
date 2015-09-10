@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"github.com/gin-gonic/gin"
+	"github.com/labstack/echo"
 	"log"
 	"os"
 	"time"
@@ -15,7 +15,7 @@ func AccessLogger() gin.HandlerFunc {
 	defer f.Close()
 	stdlogger := log.New(f, "", 0)
 
-	return func(c *gin.Context) {
+	return func(c *echo.Context) {
 		// Start timer
 		start := time.Now()
 

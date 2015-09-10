@@ -1,35 +1,13 @@
 package app
 
 import (
-	"errors"
 	"github.com/jinzhu/gorm"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
-type testConfig struct {
-}
-
-func (cnf *testConfig) Load(env string) error {
-	return nil
-}
-
-func (cnf *testConfig) Get(key string) (interface{}, error) {
-	switch key {
-	case "env":
-		return "dev", nil
-	case "DatabaseUri":
-		return "test:test@/test?charset=utf8&parseTime=True&loc=Local", nil
-	}
-	return nil, errors.New("key: " + key + " not defined!")
-}
-
-func (cnf *testConfig) GetAll() *map[string]interface{} {
-	return nil
-}
-
 func TestConnect(t *testing.T) {
-	_, err := getOrm()
+	_, err := GetOrm4Test()
 	assert.Equal(t, nil, err, "error while connection to DB")
 }
 
@@ -54,6 +32,15 @@ func TestFind(t *testing.T) {
 	grm, test, err := testSetup(t)
 	searchTest := Test{}
 	err = grm.Find(&searchTest, int64(test.ID))
+	assert.Equal(t, nil, err, "error while reading from DB")
+	assert.Equal(t, test.Title, searchTest.Title, "error while comparing saved and finded element from DB")
+	testShutdown(t, grm.GetDriver())
+}
+
+func TestFirst(t *testing.T) {
+	grm, test, err := testSetup(t)
+	searchTest := Test{}
+	err = grm.First(&searchTest, int64(test.ID))
 	assert.Equal(t, nil, err, "error while reading from DB")
 	assert.Equal(t, test.Title, searchTest.Title, "error while comparing saved and finded element from DB")
 	testShutdown(t, grm.GetDriver())
@@ -85,15 +72,8 @@ func TestDelete(t *testing.T) {
 	testShutdown(t, grm.GetDriver())
 }
 
-func getOrm() (grm *AppOrm, err error) {
-	grm = &AppOrm{}
-	cnf := &testConfig{}
-	err = grm.Connect(cnf)
-	return
-}
-
 func testSetup(t *testing.T) (grm *AppOrm, test *Test, err error) {
-	grm, err = getOrm()
+	grm, err = GetOrm4Test()
 	db := grm.GetDriver()
 	err = db.CreateTable(&Test{}).Error
 	assert.Equal(t, nil, err, "error while careate table in DB")
