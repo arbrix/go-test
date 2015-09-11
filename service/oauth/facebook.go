@@ -6,9 +6,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"strconv"
 
-	"github.com/arbrix/go-test/common"
+	"github.com/arbrix/go-test/interfaces"
 	"github.com/arbrix/go-test/model"
 	"github.com/arbrix/go-test/service/user"
 	"github.com/arbrix/go-test/util/jwt"
@@ -24,45 +23,51 @@ type OauthUser struct {
 	Name  string `json:"name"`
 }
 
-type AuthResponse struct {
-	State        string `form:"state"`
-	Code         string `form:"code"`
-	Authuser     int    `form:"authuser"`
-	NumSessions  int    `form:"num_sessions"`
-	prompt       string `form:"prompt"`
-	ImageName    string `form:"imageName"`
-	SessionState string `form:"session_state"`
-}
-
 type Facebook struct {
 	oauth2.Config
 	url        string
 	RequestUrl *url.URL
-	a          common.App
+	a          interfaces.App
 }
 
-func (fb *Facebook) Init(a common.App) error {
+func NewFacebook(a interfaces.App) (*Facebook, error) {
+	var cIDVal, cScrVal, cRUrlVal, lAddrVal string
+	var ok bool
 	cID, err := a.GetConfig().Get("oauth-facebook-client-id")
 	if err != nil {
-		return err
+		return nil, err
+	}
+	if cIDVal, ok = cID.(string); ok == false {
+		return nil, errors.New("Client ID is not string type")
 	}
 	cScr, err := a.GetConfig().Get("oauth-facebook-client-secret")
 	if err != nil {
-		return err
+		return nil, err
+	}
+	if cScrVal, ok = cScr.(string); ok == false {
+		return nil, errors.New("Client Secret is not string type")
 	}
 	cRUrl, err := a.GetConfig().Get("oauth-facebook-redirect-url")
 	if err != nil {
-		return err
+		return nil, err
+	}
+	if cRUrlVal, ok = cRUrl.(string); ok == false {
+		return nil, errors.New("Client URL is not string type")
 	}
 	lAddr, err := a.GetConfig().Get("ListenAddress")
 	if err != nil {
-		return err
+		return nil, err
+	}
+	if lAddrVal, ok = lAddr.(string); ok == false {
+		return nil, errors.New("Server address is not string type")
 	}
 
+	fb := &Facebook{}
 	fb.a = a
-	fb.ClientID = cID.(string)
-	fb.ClientSecret = cScr.(string)
-	fb.RedirectURL = "http://" + lAddr.(string) + cRUrl.(string)
+
+	fb.ClientID = cIDVal
+	fb.ClientSecret = cScrVal
+	fb.RedirectURL = "http://" + lAddrVal + cRUrlVal
 	fb.Scopes = []string{
 		"public_profile",
 		"email",
@@ -73,7 +78,7 @@ func (fb *Facebook) Init(a common.App) error {
 		Host:   "graph.facebook.com",
 		Opaque: "//graph.facebook.com/me",
 	}
-	return nil
+	return fb, nil
 }
 
 // Your credentials should be obtained from the OAuth provider
@@ -84,13 +89,13 @@ func (fb *Facebook) URL() string {
 	return fb.url
 }
 
-func (fb *Facebook) Request(authResponse AuthResponse) (*http.Response, error) {
+func (fb *Facebook) Request(code string) (*http.Response, error) {
 	var res *http.Response
 	var req *http.Request
 	var err error
 
 	// Handle the exchange code to initiate a transport.
-	token, err := fb.Exchange(oauth2.NoContext, authResponse.Code)
+	token, err := fb.Exchange(oauth2.NoContext, code)
 	if err != nil {
 		return res, err
 	}
@@ -119,6 +124,7 @@ func (fb *Facebook) CreateUser(c *echo.Context, oauthUser *OauthUser) (*model.Us
 	var u *model.User
 	tokenizer := jwt.NewTokenizer(fb.a)
 	token, err := tokenizer.Parse(c)
+	//TODO: add comma_ok statments
 	if err == nil && token.Valid {
 		u = &model.User{
 			ID:    token.Claims["id"].(int64),
@@ -166,16 +172,10 @@ func (fb *Facebook) SetUser(response *http.Response) (OauthUser, error) {
 
 // Oauth link connection and user.
 func (fb *Facebook) Oauth(c *echo.Context) (int, error) {
-	var authResponse AuthResponse
+	var code string
 	var oauthUser OauthUser
-	authResponse.Authuser, _ = strconv.Atoi(c.Form("authuser"))
-	authResponse.Code = c.Form("code")
-	authResponse.ImageName = c.Form("imageName")
-	authResponse.NumSessions, _ = strconv.Atoi(c.Form("num_sessions"))
-	authResponse.SessionState = c.Form("sessions_state")
-	authResponse.State = c.Form("state")
-	authResponse.prompt = c.Form("promt")
-	response, err := fb.Request(authResponse)
+	code = c.Form("code")
+	response, err := fb.Request(code)
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}
@@ -187,5 +187,5 @@ func (fb *Facebook) Oauth(c *echo.Context) (int, error) {
 	if err != nil {
 		return status, err
 	}
-	return http.StatusSeeOther, nil
+	return status, nil
 }

@@ -2,7 +2,7 @@ package jwt
 
 import (
 	"errors"
-	"github.com/arbrix/go-test/common"
+	"github.com/arbrix/go-test/interfaces"
 	"github.com/arbrix/go-test/model"
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo"
@@ -13,10 +13,10 @@ import (
 )
 
 type Tokenizer struct {
-	a common.App
+	a interfaces.App
 }
 
-func NewTokenizer(a common.App) *Tokenizer {
+func NewTokenizer(a interfaces.App) *Tokenizer {
 	t := &Tokenizer{a: a}
 	return t
 }

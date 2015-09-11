@@ -2,7 +2,7 @@ package app
 
 import (
 	"errors"
-	"github.com/arbrix/go-test/common"
+	"github.com/arbrix/go-test/interfaces"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
 )
@@ -12,7 +12,7 @@ type AppOrm struct {
 }
 
 //Connect init gorm ORM.
-func (orm *AppOrm) Connect(conf common.Config) error {
+func (orm *AppOrm) Connect(conf interfaces.Config) error {
 	var err error
 	var db gorm.DB
 	if dbUri, err := conf.Get("DatabaseUri"); err == nil {
@@ -105,7 +105,7 @@ func (orm *TestOrm) IsConnected() bool {
 	return true
 }
 
-func (orm *TestOrm) Connect(cong common.Config) error {
+func (orm *TestOrm) Connect(cong interfaces.Config) error {
 	return nil
 }
 

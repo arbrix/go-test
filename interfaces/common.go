@@ -1,4 +1,4 @@
-package common
+package interfaces
 
 //Config interface is describe methods for works with it
 type Config interface {

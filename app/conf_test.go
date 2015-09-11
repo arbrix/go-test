@@ -6,7 +6,7 @@ import (
 )
 
 func makeConfig(env string) (*AppConfig, error) {
-	conf := &AppConfig{basePath: "/Users/arbrix/dev/goproj/src/github.com/arbrix/go-test/config/"}
+	conf := NewAppConfig("/Users/arbrix/dev/goproj/src/github.com/arbrix/go-test/config/")
 	err := conf.Load(env)
 	return conf, err
 }

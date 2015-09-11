@@ -3,7 +3,10 @@ package app
 import (
 	"encoding/json"
 	"errors"
+	"flag"
+	"log"
 	"os"
+	"path/filepath"
 )
 
 type AppConfig struct {
@@ -11,11 +14,24 @@ type AppConfig struct {
 	options  map[string]interface{}
 }
 
-func (conf *AppConfig) SetBasePath(path string) {
-	conf.basePath = path
+func NewAppConfig() *AppConfig {
+	c := &AppConfig{}
+	c.Load()
+	return c
 }
 
-func (conf *AppConfig) Load(env string) error {
+func (conf *AppConfig) Load() error {
+	var env, basePath string
+	flag.StringVar(&env, "env", "dev", "define environment: dev, prod, test (place config file *.json with the same name in ./config folder)")
+	flag.StringVar(&basePath, "conf", "./config", "config path: ./config folder")
+	flag.Parse()
+
+	dir, err := filepath.Abs(basePath)
+	if err != nil {
+		log.Fatal(err)
+		return err
+	}
+	conf.basePath = dir
 	conf.options = make(map[string]interface{})
 	confPathSet := []string{conf.basePath + "/base.json"}
 	confPathSet = append(confPathSet, conf.basePath+"/"+env+".json")
@@ -64,6 +80,7 @@ func (conf *AppConfig) mergeOpt(src map[string]interface{}, rewrite bool) {
 	}
 }
 
+//use for tests in other packages
 type TestConfig struct {
 }
 

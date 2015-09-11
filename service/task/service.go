@@ -5,16 +5,16 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/arbrix/go-test/common"
+	"github.com/arbrix/go-test/interfaces"
 	"github.com/arbrix/go-test/model"
 	"github.com/labstack/echo"
 )
 
 type Service struct {
-	a common.App
+	a interfaces.App
 }
 
-func NewTaskService(a common.App) *Service {
+func NewTaskService(a interfaces.App) *Service {
 	return &Service{a: a}
 }
 

@@ -9,17 +9,17 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/arbrix/go-test/common"
+	"github.com/arbrix/go-test/interfaces"
 	"github.com/arbrix/go-test/model"
 	"github.com/arbrix/go-test/util/helper"
 	"github.com/labstack/echo"
 )
 
 type Service struct {
-	a common.App
+	a interfaces.App
 }
 
-func NewUserService(a common.App) *Service {
+func NewUserService(a interfaces.App) *Service {
 	us := &Service{a: a}
 	return us
 }
