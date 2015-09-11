@@ -6,6 +6,7 @@ import (
 	"github.com/arbrix/go-test/service/user"
 	"github.com/arbrix/go-test/util/jwt"
 	"github.com/labstack/echo"
+	"log"
 	"net/http"
 )
 
@@ -22,8 +23,9 @@ func NewAuth(a common.App, pg *echo.Group) *Auth {
 
 //login provide JWT in response if login success.
 func (au *Auth) login(c *echo.Context) error {
-	var loginData model.LoginJSON
+	loginData := &model.LoginJSON{}
 	err := c.Bind(loginData)
+	log.Printf("login:%s; passwd:%s\n", loginData.Email, loginData.Password)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err)
 		return err
