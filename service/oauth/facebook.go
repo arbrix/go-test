@@ -9,7 +9,6 @@ import (
 
 	"github.com/arbrix/go-test/interfaces"
 	"github.com/arbrix/go-test/model"
-	"github.com/arbrix/go-test/service/user"
 	"github.com/arbrix/go-test/util/jwt"
 	"github.com/labstack/echo"
 	"golang.org/x/oauth2"
@@ -134,12 +133,11 @@ func (fb *Facebook) CreateUser(c *echo.Context, oauthUser *OauthUser) (*model.Us
 		return u, http.StatusBadRequest, errors.New("User already authorized")
 	}
 	u = &model.User{Email: oauthUser.Id + "@facebook.com", Name: oauthUser.Name}
-	usrSrv := user.NewUserService(fb.a)
-	usr, err := usrSrv.AddNew(u)
+	u.CreateNew(fb.a.GetDB())
 	if err != nil {
-		return usr, http.StatusInternalServerError, errors.New("User is not created.")
+		return u, http.StatusInternalServerError, errors.New("User is not created.")
 	}
-	return usr, http.StatusOK, nil
+	return u, http.StatusOK, nil
 }
 
 // LoginOrCreate login or create with oauthUser

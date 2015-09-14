@@ -23,7 +23,6 @@ func (orm *AppOrm) Connect(conf interfaces.Config) error {
 	}
 	db.DB()
 
-	// Then you could invoke `*sql.DB`'s functions with it
 	db.DB().Ping()
 	db.DB().SetMaxIdleConns(10)
 	db.DB().SetMaxOpenConns(100)
@@ -32,9 +31,6 @@ func (orm *AppOrm) Connect(conf interfaces.Config) error {
 	db.SingularTable(true)
 	if env, err := conf.Get("env"); err == nil && env == "dev" {
 		db.LogMode(true)
-	}
-	if err != nil {
-		return err
 	}
 	orm.driver = &db
 	return nil
@@ -88,47 +84,4 @@ func (orm *AppOrm) Close() error {
 
 func (orm *AppOrm) GetDriver() *gorm.DB {
 	return orm.driver
-}
-
-type TestOrm struct {
-}
-
-//for in tests
-func GetOrm4Test() (grm *AppOrm, err error) {
-	grm = &AppOrm{}
-	cnf := &TestConfig{}
-	err = grm.Connect(cnf)
-	return
-}
-
-func (orm *TestOrm) IsConnected() bool {
-	return true
-}
-
-func (orm *TestOrm) Connect(cong interfaces.Config) error {
-	return nil
-}
-
-func (orm *TestOrm) Create(interface{}) error {
-	return nil
-}
-
-func (orm *TestOrm) Find(interface{}, interface{}) error {
-	return nil
-}
-
-func (orm *TestOrm) First(interface{}, interface{}) error {
-	return nil
-}
-
-func (orm *TestOrm) Update(interface{}, map[string]interface{}) error {
-	return nil
-}
-
-func (orm *TestOrm) Save(interface{}) error {
-	return nil
-}
-
-func (orm *TestOrm) Delete(interface{}) error {
-	return nil
 }

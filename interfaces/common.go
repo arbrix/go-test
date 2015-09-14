@@ -2,8 +2,7 @@ package interfaces
 
 //Config interface is describe methods for works with it
 type Config interface {
-	SetBasePath(path string)
-	Load(env string) error
+	Load() error
 	Get(key string) (interface{}, error)
 	GetAll() *map[string]interface{}
 }

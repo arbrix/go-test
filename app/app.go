@@ -9,8 +9,6 @@ import (
 	"github.com/arbrix/go-test/interfaces"
 	"github.com/arbrix/go-test/model"
 	"github.com/arbrix/go-test/service/oauth"
-	"github.com/arbrix/go-test/service/task"
-	"github.com/arbrix/go-test/service/user"
 	"github.com/arbrix/go-test/util/jwt"
 	"github.com/arbrix/go-test/util/middleware"
 	"github.com/labstack/echo"
@@ -21,7 +19,6 @@ type App struct {
 	conf interfaces.Config
 	db   interfaces.Orm
 	fb   *oauth.Facebook
-	ts   *task.Service
 }
 
 type ErrorMsg struct {
@@ -120,7 +117,6 @@ func (a *App) apiRoute(e *echo.Echo) error {
 	fbg.Get("/facebook/redirect", a.facebookRedirect)
 	//tasks
 	tokenizer := jwt.NewTokenizer(a)
-	a.ts = task.NewTaskService(a)
 	tg := g.Group("/tasks", tokenizer.Check())
 	tg.Post("", a.create)
 	tg.Get("/:id", a.retrieve)
@@ -139,8 +135,19 @@ func (a *App) login(c *echo.Context) error {
 		c.JSON(http.StatusBadRequest, err)
 		return err
 	}
-	us := user.NewUserService(a)
-	user, status, err := us.Login(loginData.Email, loginData.Password)
+	if loginData.Email == "" {
+		err = errors.New("email could't be empty.")
+		c.JSON(http.StatusNotFound, err)
+		return err
+	}
+	if loginData.Password == "" {
+		err = errors.New("password could't be empty.")
+		c.JSON(http.StatusNotFound, err)
+		return err
+	}
+	user := &model.User{}
+	user.Email, user.Password = loginData.Email, loginData.Password
+	status, err := user.CheckPass(a.GetDB())
 	if err != nil {
 		c.JSON(status, err)
 		return err
@@ -186,37 +193,55 @@ func (a *App) sendJWT(c *echo.Context) error {
 
 //create Create a task.
 func (a *App) create(c *echo.Context) error {
-	status, err := a.ts.Create(c)
-	c.JSON(status, err)
+	task := &model.Task{}
+	var err error
+
+	err = c.Bind(task)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, ErrorMsg{Msg: err.Error()})
+		return err
+	}
+	status, err := task.Create(a.GetDB())
+	c.JSON(status, ErrorMsg{Msg: err.Error()})
 	return err
 }
 
 //rertieve Retrieve a task.
 func (a *App) retrieve(c *echo.Context) error {
-	task, status, err := a.ts.Retrieve(c)
-	if err == nil {
-		c.JSON(status, task)
-	} else {
-		c.JSON(status, err.Error())
+	id := c.Param("id")
+	task := &model.Task{}
+	if a.GetDB().First(task, id) != nil {
+		err := errors.New("Task is not found.")
+		c.JSON(http.StatusNotFound, ErrorMsg{Msg: err.Error()})
+		return err
 	}
-	return err
+	c.JSON(http.StatusOK, task)
+	return nil
 
 }
 
 //retrieve Retrieve task array.
 func (a *App) retrieveAll(c *echo.Context) error {
-	tasks := a.ts.RetrieveAll(c)
+	var tasks []*model.Task
+	a.GetDB().Find(&tasks, struct{}{})
 	c.JSON(http.StatusOK, tasks)
 	return nil
 }
 
 //update Update a task.
 func (a *App) update(c *echo.Context) error {
-	task, status, err := a.ts.Update(c)
+	id := c.Param("id")
+	task := &model.Task{}
+	if a.GetDB().First(task, id) != nil {
+		err := errors.New("Task is not found.")
+		c.JSON(http.StatusNotFound, ErrorMsg{Msg: err.Error()})
+		return err
+	}
+	status, err := task.Update(a.GetDB(), c)
 	if err == nil {
 		c.JSON(status, task)
 	} else {
-		c.JSON(status, err.Error())
+		c.JSON(status, ErrorMsg{Msg: err.Error()})
 	}
 	return err
 }
