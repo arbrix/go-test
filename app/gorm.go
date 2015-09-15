@@ -5,6 +5,7 @@ import (
 	"github.com/arbrix/go-test/interfaces"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
+	"log"
 )
 
 type AppOrm struct {
@@ -13,12 +14,14 @@ type AppOrm struct {
 
 //Connect init gorm ORM.
 func (orm *AppOrm) Connect(conf interfaces.Config) error {
-	var err error
 	var db gorm.DB
-	if dbUri, err := conf.Get("DatabaseUri"); err == nil {
+	dbUri, err := conf.Get("DatabaseUri")
+	if dbUri, ok := dbUri.(string); err == nil && ok {
+		log.Println(dbUri)
 		db, err = gorm.Open("mysql", dbUri)
 	}
 	if err != nil {
+		log.Fatal(err.Error())
 		return err
 	}
 	db.DB()

@@ -32,6 +32,7 @@ func (conf *AppConfig) Load() error {
 		return err
 	}
 	conf.basePath = dir
+	log.Println(dir)
 	conf.options = make(map[string]interface{})
 	confPathSet := []string{conf.basePath + "/base.json"}
 	confPathSet = append(confPathSet, conf.basePath+"/"+env+".json")
@@ -49,7 +50,7 @@ func (conf *AppConfig) Get(key string) (interface{}, error) {
 	if val, ok := conf.options[key]; ok {
 		return val, nil
 	}
-	return nil, errors.New("Options with key: " + key + " not exists!")
+	return nil, errors.New("Options with key: " + key + " not exists! In " + conf.basePath)
 }
 
 func (conf *AppConfig) GetAll() *map[string]interface{} {

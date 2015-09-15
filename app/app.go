@@ -46,6 +46,7 @@ func (a *App) GetConfig() interfaces.Config {
 }
 
 func (app *App) Run() error {
+	app.conf.Load()
 	err := app.db.Connect(app.conf)
 	if err != nil {
 		return err
